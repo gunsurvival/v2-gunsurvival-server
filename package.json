@@ -1,0 +1,31 @@
+{
+  "name": "gunsurvival-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "khoa",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "ejs": "^3.0.2",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "random": "^2.2.0",
+    "random-normal": "^1.0.0",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {},
+  "description": "gunsurvival server",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MrKhoaBean/gunsurvival-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MrKhoaBean/gunsurvival-server/issues"
+  },
+  "homepage": "https://github.com/MrKhoaBean/gunsurvival-server#readme"
+}
