@@ -220,6 +220,15 @@ io.on('connection', function(socket) {
         //     }
         // }
 
+        setTimeout(()=>{
+            if (room.setting.playing.length <= 0) {
+                clearInterval(room.interval);
+                rooms.splice(rooms.findIndex(e => e.id == room.setting.id), 1);
+                io.emit('room delete', room.setting.id);
+                return;
+            }
+        }, 1000);
+
         room.interval = setInterval(() => {
             let gunnersData = [];
             for (let gunner of gunners) {
