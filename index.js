@@ -77,7 +77,7 @@ const session = require('express-session');
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const random = require('random');
-const port = process.env.PORT || 6789;
+const port = process.env.PORT || 80;
 let listImages = [];
 const direction = {
     87: 'up',
