@@ -3,4 +3,4 @@
 <hr>
 Dùng lệnh node index.js hoặc chạy run.bat để khởi tạo!
 <br>
-code client: https://github.com/MrKhoaBean/gunsurvival-client
+Code client: https://github.com/MrKhoaBean/gunsurvival-client
