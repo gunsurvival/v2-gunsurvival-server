@@ -77,7 +77,7 @@ const session = require('express-session');
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const random = require('random');
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 8080;
 let listImages = [];
 const direction = {
     87: 'up',
@@ -154,8 +154,7 @@ app.post('/mapeditor', function(req, res) {
 });
 
 io.on('connection', function(socket) {
-    console.log('1 player connected, online: ' + io.engine.clientsCount);
-    io.emit('online', io.engine.clientsCount);
+    console.log('Online: ' + io.engine.clientsCount);
 
     socket.name = socket.id;
 
@@ -515,8 +514,7 @@ io.on('connection', function(socket) {
     //---------------------------------------------
 
     socket.on('disconnect', () => {
-        console.log('1 player disconnected, online: ' + io.engine.clientsCount);
-        io.emit('online', io.engine.clientsCount);
+        console.log('Online: ' + io.engine.clientsCount);
         let room = getRoom(socket);
         if (!room) return;
         let { setting, map, gunners } = room;
