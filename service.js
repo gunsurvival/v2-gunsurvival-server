@@ -83,7 +83,7 @@ const BULLET_CONFIG = {
         reload: 60
     },
     shotgun: {
-        size: 0.25,
+        size: 0.3,
         split: 6,
         delayHold: 20,
         delayFire: 20,
@@ -553,21 +553,22 @@ myJob = setInterval(() => {
                 	    let bulletVector = {...bullet.speed};
                 	    if (sides.length > 0) {
                 	    	let scaleBV;
+                            let bounceFric = 0.7;
                 	    	switch (sides[random.int(0, sides.length-1)]) {
                 	    	    case "left":
-                	    	        bullet.speed.x *= -.5;
+                	    	        bullet.speed.x *= -bounceFric;
                 	    	        scaleBV = distance / bulletVector.x;
                 	    	        break;
                 	    	    case "right":
-                	    	        bullet.speed.x *= -.5;
+                	    	        bullet.speed.x *= -bounceFric;
                 	    	        scaleBV = distance / bulletVector.x;
                 	    	        break;
                 	    	    case "top":
-                	    	        bullet.speed.y *= -.5;
+                	    	        bullet.speed.y *= -bounceFric;
                 	    	        scaleBV = distance / bulletVector.y;
                 	    	        break;
                 	    	    case "bottom":
-                	    	        bullet.speed.y *= -.5;
+                	    	        bullet.speed.y *= -bounceFric;
                 	    	        scaleBV = distance / bulletVector.y;
                 	    	        break;
                 	    	}
