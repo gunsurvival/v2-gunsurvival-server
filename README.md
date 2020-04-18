@@ -4,3 +4,5 @@
 Dùng lệnh node index.js hoặc chạy run.bat để khởi tạo!
 <br>
 Code client: https://github.com/MrKhoaBean/gunsurvival-client
+<br>
+Link chơi trực tuyến: http://gunsurvival.tk/
