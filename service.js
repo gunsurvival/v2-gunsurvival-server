@@ -4,6 +4,11 @@ function DegreesToRadians(degrees) {
     const pi = Math.PI;
     return degrees * (pi / 180);
 }
+
+function RadiansToDegrees(radians) {
+    const pi = Math.PI;
+    return radians * (180 / pi);
+}
 const {
     workerData,
     parentPort
@@ -12,18 +17,22 @@ const collide = require(`${__dirname}/assets/lib/p5.collide.js`);
 const randomNormal = require('random-normal');
 const random = require('random');
 const MOVING_SPEED = function(object) { // object here means gunner me 
-    let speed = 6;
+    let speed = 7;
 
     if (object.keydown['shift'])
         speed = 3;
 
     if (object.firing)
         speed--;
+    speed -= BULLET_CONFIG[object.bag.arr[object.bag.index].name].weight;
+    if (speed <= 0)
+        speed = 1;
     return speed; //normal
 };
 const BULLET_CONFIG = {
     ak47: {
-        size: 0.7,
+        imgName: 'Bullet',
+        size: 0.89,
         split: 1,
         delayHold: 20,
         delayFire: 4,
@@ -35,9 +44,11 @@ const BULLET_CONFIG = {
             staying: 10
         },
         round: 30,
-        reload: 45
+        reload: 45,
+        weight: 1
     },
     awp: {
+        imgName: 'Bullet',
         size: 1,
         split: 1,
         delayHold: 50,
@@ -50,10 +61,12 @@ const BULLET_CONFIG = {
             staying: 1
         },
         round: 5,
-        reload: 110
+        reload: 110,
+        weight: 3.7
     },
     m4a1: {
-        size: 0.7,
+        imgName: 'Bullet',
+        size: 0.85,
         split: 1,
         delayHold: 20,
         delayFire: 4,
@@ -65,24 +78,28 @@ const BULLET_CONFIG = {
             staying: 7
         },
         round: 30,
-        reload: 50
+        reload: 50,
+        weight: 1.2
     },
     paint: {
+        imgName: 'Paint-bullet',
         size: 1.7,
         split: 1,
         delayHold: 20,
         delayFire: 10,
         speed: 80,
-        friction: 0.85,
+        friction: 0.88,
         dev: {
             moving: 30,
             walking: 20,
             staying: 15
         },
         round: 10,
-        reload: 60
+        reload: 60,
+        weight: 2
     },
     shotgun: {
+        imgName: 'Bullet',
         size: 0.3,
         split: 6,
         delayHold: 20,
@@ -95,7 +112,93 @@ const BULLET_CONFIG = {
             staying: 15
         },
         round: 5,
-        reload: 70
+        reload: 70,
+        weight: 2.8
+    },
+    chicken: {
+        imgName: 'Egg',
+        size: 1,
+        split: 1,
+        delayHold: 30,
+        delayFire: 7,
+        speed: 120,
+        friction: 0.8,
+        dev: {
+            moving: 30,
+            walking: 25,
+            staying: 20
+        },
+        round: 100,
+        reload: 10,
+        weight: 1.5
+    },
+    gatlin: {
+        imgName: 'Bullet',
+        size: 0.8,
+        split: 1,
+        delayHold: 100,
+        delayFire: 3,
+        speed: 100,
+        friction: 0.91,
+        dev: {
+            moving: 50,
+            walking: 40,
+            staying: 30
+        },
+        round: 200,
+        reload: 200,
+        weight: 4.5
+    },
+    rpk: {
+        imgName: 'Bullet',
+        size: 0.85,
+        split: 1,
+        delayHold: 30,
+        delayFire: 4,
+        speed: 120,
+        friction: 0.92,
+        dev: {
+            moving: 40,
+            walking: 34,
+            staying: 27
+        },
+        round: 80,
+        reload: 40,
+        weight: 2.3
+    },
+    uzi: {
+        imgName: 'Smg-bullet',
+        size: 0.6,
+        split: 1,
+        delayHold: 20,
+        delayFire: 2,
+        speed: 80,
+        friction: 0.89,
+        dev: {
+            moving: 25,
+            walking: 20,
+            staying: 10
+        },
+        round: 25,
+        reload: 30,
+        weight: 0.5
+    },
+    revolver: {
+    	imgName: 'Bullet',
+    	size: 0.9,
+    	split: 1,
+    	delayHold: 30,
+    	delayFire: 17,
+    	speed: 130,
+    	friction: 0.87,
+    	dev: {
+    	    moving: 20,
+    	    walking: 15,
+    	    staying: 10
+    	},
+    	round: 8,
+    	reload: 40,
+    	weight: 0.3
     }
 }
 
@@ -103,6 +206,9 @@ const REAL_SIZE = {
     Rock: 200, // những vật tròn thì là trừ
     Tree: 190, // ví dụ: object.size*200 - 120
     Bullet: 10,
+    Egg: 22,
+    'Paint-bullet': 22,
+    'Smg-bullet': 10,
     Gunner: 80,
     Box_emty: {
         width: 144,
@@ -122,6 +228,9 @@ const MINUS_SIZE = {
     Rock: 30,
     Tree: 120,
     Bullet: 2,
+    Egg: 2,
+    'Paint-bullet': 2,
+    'Smg-bullet': 2,
     Gunner: 10,
     Box_emty: {
         width: 10,
@@ -187,6 +296,7 @@ function checkCollide(circlePos, radius, object) { // object = map[i]
     let minus = MINUS_SIZE[object.type];
     switch (object.type) {
         case 'Bullet':
+            let bRadius = REAL_SIZE[BULLET_CONFIG[object.name].imgName] * BULLET_CONFIG[object.name].size - MINUS_SIZE[BULLET_CONFIG[object.name].imgName];
             let px = object.pos.x - object.speed.x; // previous position
             let py = object.pos.y - object.speed.y;
             let cx = object.pos.x; // current position
@@ -198,7 +308,7 @@ function checkCollide(circlePos, radius, object) { // object = map[i]
                 y: vectorO1O2.x
             }
             let magAB = Math.sqrt(Math.pow(vectorAB.x, 2) + Math.pow(vectorAB.y, 2)); // length của vector pháp tuyến
-            let scale = (real * object.size - minus) / magAB; // scale để length của vector pháp tuyến = x length
+            let scale = (bRadius / 2) / magAB; // scale để length của vector pháp tuyến = x length
             let A = {
                     x: vectorAB.x * scale + px,
                     y: vectorAB.y * scale + py
@@ -227,8 +337,8 @@ function checkCollide(circlePos, radius, object) { // object = map[i]
         case 'Box_emty':
         case 'Box_wooden':
         case 'Roof_brown':
-            let newWidth = real.width * object.size - minus.width/2;
-            let newHeight = real.height * object.size - minus.height/2;
+            let newWidth = real.width * object.size - minus.width / 2;
+            let newHeight = real.height * object.size - minus.height / 2;
             return collide.collideRectCircle(object.pos.x - newWidth / 2, object.pos.y - newHeight / 2, newWidth, newHeight, circlePos.x, circlePos.y, radius);
             break;
     }
@@ -368,8 +478,8 @@ myJob = setInterval(() => {
                 case 'Box_wooden':
                 case 'Roof_brown':
                     let sizeBox = {
-                        width: REAL_SIZE[other.type].width * other.size - MINUS_SIZE[other.type].width/2,
-                        height: REAL_SIZE[other.type].height * other.size - MINUS_SIZE[other.type].height/2
+                        width: REAL_SIZE[other.type].width * other.size - MINUS_SIZE[other.type].width / 2,
+                        height: REAL_SIZE[other.type].height * other.size - MINUS_SIZE[other.type].height / 2
                     }
                     let leftSide = other.pos.x - sizeBox.width / 2,
                         rightSide = other.pos.x + sizeBox.width / 2,
@@ -395,11 +505,11 @@ myJob = setInterval(() => {
                         testY = bottomSide; // bottom edge
                         sides.push('bottom');
                     }
-                    let fitW = 40 + MINUS_SIZE[other.type].width/2;
-                    let fitH = 40 + MINUS_SIZE[other.type].height/2;
+                    let fitW = 40 + MINUS_SIZE[other.type].width / 2;
+                    let fitH = 40 + MINUS_SIZE[other.type].height / 2;
                     if (sides.length > 1) {
-                    	fitW -= MINUS_SIZE[other.type].width/2;
-                    	fitH -= MINUS_SIZE[other.type].height/2;
+                        fitW -= MINUS_SIZE[other.type].width / 2;
+                        fitH -= MINUS_SIZE[other.type].height / 2;
                     }
                     for (let side of sides) {
                         switch (side) {
@@ -435,34 +545,34 @@ myJob = setInterval(() => {
                     //             break;
                     //     }
                     // } else { // nếu va chạm ở góc
-                        // position.x = lastPosition.x; // láy vị trí trước đó
-                        // position.y = lastPosition.y;
-                        // let save = {
-                        // 	x: position.x,
-                        // 	y: position.y
-                        // }
-                        // for (let i in move) {
-                        //     switch (i) {
-                        //         case 'up':
-                        //             position.y -= MOVING_SPEED(gunner);
-                        //             break;
-                        //         case 'down':
-                        //             position.y += MOVING_SPEED(gunner);
-                        //             break;
-                        //         case 'left':
-                        //             position.x -= MOVING_SPEED(gunner);
-                        //             break;
-                        //         case 'right':
-                        //             position.x += MOVING_SPEED(gunner);
-                        //             break;
-                        //     }
-                        //     if (checkCollide(position, 80, other)) { // sau khi đi nếu va chạm thì reverse
-                        //         position.x = save.x;
-                        //         position.y = save.y;
-                        //     }
-                        //     save.x = position.x;
-                        //     save.y = position.y;
-                        // }
+                    // position.x = lastPosition.x; // láy vị trí trước đó
+                    // position.y = lastPosition.y;
+                    // let save = {
+                    // 	x: position.x,
+                    // 	y: position.y
+                    // }
+                    // for (let i in move) {
+                    //     switch (i) {
+                    //         case 'up':
+                    //             position.y -= MOVING_SPEED(gunner);
+                    //             break;
+                    //         case 'down':
+                    //             position.y += MOVING_SPEED(gunner);
+                    //             break;
+                    //         case 'left':
+                    //             position.x -= MOVING_SPEED(gunner);
+                    //             break;
+                    //         case 'right':
+                    //             position.x += MOVING_SPEED(gunner);
+                    //             break;
+                    //     }
+                    //     if (checkCollide(position, 80, other)) { // sau khi đi nếu va chạm thì reverse
+                    //         position.x = save.x;
+                    //         position.y = save.y;
+                    //     }
+                    //     save.x = position.x;
+                    //     save.y = position.y;
+                    // }
                     // }
                     break;
             }
@@ -491,95 +601,95 @@ myJob = setInterval(() => {
 
             for (let point of points) { // lần kiểm tra này là kiểm tra va chạm những vật chặn
                 let other = point.userData;
-                let bRadius = REAL_SIZE['Bullet'] * BULLET_CONFIG[bullet.name].size - MINUS_SIZE['Bullet'];
+                let bRadius = REAL_SIZE[BULLET_CONFIG[bullet.name].imgName] * BULLET_CONFIG[bullet.name].size - MINUS_SIZE[BULLET_CONFIG[bullet.name].imgName];
                 if (checkCollide(bullet.pos, bRadius, other)) {
-                	switch (other.type) {
-                	    case 'Rock':
-                	        // bullet.speed.x *= 0.5;
-                	        // bullet.speed.y *= 0.5;
-                	        let bounceVector = {
-                	            x: (bullet.pos.x - bullet.speed.x) - other.pos.x,
-                	            y: (bullet.pos.y - bullet.speed.y) - other.pos.y
-                	        }
-                	        let magBounce = Math.sqrt(Math.pow(bounceVector.x, 2) + Math.pow(bounceVector.y, 2));
-                	        let magSpeed = Math.sqrt(Math.pow(bullet.speed.x, 2) + Math.pow(bullet.speed.y, 2));
-                	        let scale = magSpeed / magBounce;
-                	        let newSpeed = {
-                	            x: (bounceVector.x * scale) / 2,
-                	            y: (bounceVector.y * scale) / 2
-                	        }
-                	        bullet.speed.x = newSpeed.x;
-                	        bullet.speed.y = newSpeed.y;
+                    switch (other.type) {
+                        case 'Rock':
+                            // bullet.speed.x *= 0.5;
+                            // bullet.speed.y *= 0.5;
+                            let bounceVector = {
+                                x: (bullet.pos.x - bullet.speed.x) - other.pos.x,
+                                y: (bullet.pos.y - bullet.speed.y) - other.pos.y
+                            }
+                            let magBounce = Math.sqrt(Math.pow(bounceVector.x, 2) + Math.pow(bounceVector.y, 2));
+                            let magSpeed = Math.sqrt(Math.pow(bullet.speed.x, 2) + Math.pow(bullet.speed.y, 2));
+                            let scale = magSpeed / magBounce;
+                            let newSpeed = {
+                                x: (bounceVector.x * scale) / 2,
+                                y: (bounceVector.y * scale) / 2
+                            }
+                            bullet.speed.x = newSpeed.x;
+                            bullet.speed.y = newSpeed.y;
 
-                	        break;
-                	    case 'Tree':
-                	        bullet.speed.x *= 0.85;
-                	        bullet.speed.y *= 0.85;
-                	        break;
-                	    case 'Box_emty':
-                	    case 'Box_wooden':
-                	    case 'Roof_brown':
-                	        let sizeBox = {
-                	        width: REAL_SIZE[other.type].width * other.size - MINUS_SIZE[other.type].width/2,
-                	        height: REAL_SIZE[other.type].height * other.size - MINUS_SIZE[other.type].height/2
-                	    }
-                	    let leftSide = other.pos.x - sizeBox.width / 2,
-                	        rightSide = other.pos.x + sizeBox.width / 2,
-                	        topSide = other.pos.y - sizeBox.height / 2,
-                	        bottomSide = other.pos.y + sizeBox.height / 2;
+                            break;
+                        case 'Tree':
+                            bullet.speed.x *= 0.85;
+                            bullet.speed.y *= 0.85;
+                            break;
+                        case 'Box_emty':
+                        case 'Box_wooden':
+                        case 'Roof_brown':
+                            let sizeBox = {
+                                width: REAL_SIZE[other.type].width * other.size - MINUS_SIZE[other.type].width / 2,
+                                height: REAL_SIZE[other.type].height * other.size - MINUS_SIZE[other.type].height / 2
+                            }
+                            let leftSide = other.pos.x - sizeBox.width / 2,
+                                rightSide = other.pos.x + sizeBox.width / 2,
+                                topSide = other.pos.y - sizeBox.height / 2,
+                                bottomSide = other.pos.y + sizeBox.height / 2;
 
-                	    let sides = [];
-                	    let cx = bullet.pos.x - bullet.speed.x;
-                	    let cy = bullet.pos.y - bullet.speed.y;
-                	    let testX = cx;
-                	    let testY = cy;
+                            let sides = [];
+                            let cx = bullet.pos.x - bullet.speed.x;
+                            let cy = bullet.pos.y - bullet.speed.y;
+                            let testX = cx;
+                            let testY = cy;
 
-                	    // which edge is closest?
-                	    if (cx < leftSide) {
-                	        testX = leftSide; // test left edge
-                	        sides.push('left');
-                	    } else if (cx > rightSide) {
-                	        testX = rightSide; // right edge
-                	        sides.push('right');
-                	    }
-                	    if (cy < topSide) {
-                	        testY = topSide; // top edge
-                	        sides.push('top');
-                	    } else if (cy > bottomSide) {
-                	        testY = bottomSide; // bottom edge
-                	        sides.push('bottom');
-                	    }
-                	    let distance = Math.sqrt(Math.pow(cx-testX, 2) + Math.pow(cy-testY, 2));
-                	    let bulletVector = {...bullet.speed};
-                	    if (sides.length > 0) {
-                	    	let scaleBV;
-                            let bounceFric = 0.7;
-                	    	switch (sides[random.int(0, sides.length-1)]) {
-                	    	    case "left":
-                	    	        bullet.speed.x *= -bounceFric;
-                	    	        scaleBV = distance / bulletVector.x;
-                	    	        break;
-                	    	    case "right":
-                	    	        bullet.speed.x *= -bounceFric;
-                	    	        scaleBV = distance / bulletVector.x;
-                	    	        break;
-                	    	    case "top":
-                	    	        bullet.speed.y *= -bounceFric;
-                	    	        scaleBV = distance / bulletVector.y;
-                	    	        break;
-                	    	    case "bottom":
-                	    	        bullet.speed.y *= -bounceFric;
-                	    	        scaleBV = distance / bulletVector.y;
-                	    	        break;
-                	    	}
-                	    	bullet.pos.x = cx + bulletVector.x* Math.abs(scaleBV);
-                	    	bullet.pos.y = cy + bulletVector.y* Math.abs(scaleBV);
-                	    } else {
-                	    	bullet.delete = true;
-                	    }
-                	    
-                	    break;
-                	}
+                            // which edge is closest?
+                            if (cx < leftSide) {
+                                testX = leftSide; // test left edge
+                                sides.push('left');
+                            } else if (cx > rightSide) {
+                                testX = rightSide; // right edge
+                                sides.push('right');
+                            }
+                            if (cy < topSide) {
+                                testY = topSide; // top edge
+                                sides.push('top');
+                            } else if (cy > bottomSide) {
+                                testY = bottomSide; // bottom edge
+                                sides.push('bottom');
+                            }
+                            let distance = Math.sqrt(Math.pow(cx - testX, 2) + Math.pow(cy - testY, 2));
+                            let bulletVector = { ...bullet.speed };
+                            if (sides.length > 0) {
+                                let scaleBV;
+                                let bounceFric = 0.7;
+                                switch (sides[random.int(0, sides.length - 1)]) {
+                                    case "left":
+                                        bullet.speed.x *= -bounceFric;
+                                        scaleBV = distance / bulletVector.x;
+                                        break;
+                                    case "right":
+                                        bullet.speed.x *= -bounceFric;
+                                        scaleBV = distance / bulletVector.x;
+                                        break;
+                                    case "top":
+                                        bullet.speed.y *= -bounceFric;
+                                        scaleBV = distance / bulletVector.y;
+                                        break;
+                                    case "bottom":
+                                        bullet.speed.y *= -bounceFric;
+                                        scaleBV = distance / bulletVector.y;
+                                        break;
+                                }
+                                bullet.pos.x = cx + bulletVector.x * Math.abs(scaleBV);
+                                bullet.pos.y = cy + bulletVector.y * Math.abs(scaleBV);
+                            } else {
+                                bullet.delete = true;
+                            }
+
+                            break;
+                    }
                 }
             }
             //kiểm tra xong va chạm đạn
@@ -649,14 +759,15 @@ myJob = setInterval(() => {
                     bullets.push({
                         owner: gunner.id,
                         name: holdingGun.name,
-                        id: `${gunner.id}|${bulletID++}`,
+                        id: `${gunner.id}|${bulletID++}${((i > 0) ? '(split)': '')}`,
                         type: 'Bullet',
                         speed,
                         size: BULLET_CONFIG[holdingGun.name].size,
                         friction,
-                        radianSpeed,
+                        degree: RadiansToDegrees(radianSpeed),
                         pos: startPos,
-                        delete: false
+                        delete: false,
+                        imgName: BULLET_CONFIG[holdingGun.name].imgName.toLowerCase()
                     });
                 }
             }
