@@ -47,23 +47,6 @@ const BULLET_CONFIG = {
         reload: 45,
         weight: 1
     },
-    awp: {
-        imgName: 'Bullet',
-        size: 1,
-        split: 1,
-        delayHold: 50,
-        delayFire: 50,
-        speed: 120,
-        friction: 0.93,
-        dev: {
-            moving: 30,
-            walking: 10,
-            staying: 1
-        },
-        round: 5,
-        reload: 110,
-        weight: 3.7
-    },
     m4a1: {
         imgName: 'Bullet',
         size: 0.85,
@@ -81,14 +64,31 @@ const BULLET_CONFIG = {
         reload: 50,
         weight: 1.2
     },
+    awp: {
+        imgName: 'Bullet',
+        size: 1,
+        split: 1,
+        delayHold: 50,
+        delayFire: 50,
+        speed: 120,
+        friction: 0.93,
+        dev: {
+            moving: 30,
+            walking: 10,
+            staying: 1
+        },
+        round: 5,
+        reload: 110,
+        weight: 3.7
+    },
     paint: {
         imgName: 'Paint-bullet',
         size: 1.7,
         split: 1,
         delayHold: 20,
         delayFire: 10,
-        speed: 80,
-        friction: 0.88,
+        speed: 100,
+        friction: 0.8,
         dev: {
             moving: 30,
             walking: 20,
@@ -136,14 +136,14 @@ const BULLET_CONFIG = {
         imgName: 'Bullet',
         size: 0.8,
         split: 1,
-        delayHold: 100,
+        delayHold: 80,
         delayFire: 3,
         speed: 100,
         friction: 0.91,
         dev: {
-            moving: 50,
-            walking: 40,
-            staying: 30
+            moving: 45,
+            walking: 30,
+            staying: 20
         },
         round: 200,
         reload: 200,
@@ -158,9 +158,9 @@ const BULLET_CONFIG = {
         speed: 120,
         friction: 0.92,
         dev: {
-            moving: 40,
-            walking: 34,
-            staying: 27
+            moving: 36,
+            walking: 30,
+            staying: 25
         },
         round: 80,
         reload: 40,
@@ -177,7 +177,7 @@ const BULLET_CONFIG = {
         dev: {
             moving: 25,
             walking: 20,
-            staying: 10
+            staying: 15
         },
         round: 25,
         reload: 30,
@@ -198,7 +198,24 @@ const BULLET_CONFIG = {
     	},
     	round: 8,
     	reload: 40,
-    	weight: 0.3
+    	weight: 0
+    },
+    p90: {
+        imgName: 'Smg-bullet',
+        size: 0.6,
+        split: 1,
+        delayHold: 25,
+        delayFire: 3,
+        speed: 90,
+        friction: 0.89,
+        dev: {
+            moving: 21,
+            walking: 18,
+            staying: 12
+        },
+        round: 50,
+        reload: 45,
+        weight: 1
     }
 }
 
@@ -663,7 +680,7 @@ myJob = setInterval(() => {
                             let bulletVector = { ...bullet.speed };
                             if (sides.length > 0) {
                                 let scaleBV;
-                                let bounceFric = 0.7;
+                                let bounceFric = 0.5;
                                 switch (sides[random.int(0, sides.length - 1)]) {
                                     case "left":
                                         bullet.speed.x *= -bounceFric;
