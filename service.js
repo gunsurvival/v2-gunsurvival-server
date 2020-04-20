@@ -18,15 +18,13 @@ const randomNormal = require('random-normal');
 const random = require('random');
 const MOVING_SPEED = function(object) { // object here means gunner me 
     let speed = 7;
-
+    speed -= BULLET_CONFIG[object.bag.arr[object.bag.index].name].weight;
     if (object.keydown['shift'])
         speed = 3;
-
     if (object.firing)
         speed--;
-    speed -= BULLET_CONFIG[object.bag.arr[object.bag.index].name].weight;
-    if (speed <= 0)
-        speed = 1;
+    if (speed <= 2)
+        speed = 2;
     return speed; //normal
 };
 const BULLET_CONFIG = {
@@ -88,7 +86,7 @@ const BULLET_CONFIG = {
         delayHold: 20,
         delayFire: 10,
         speed: 100,
-        friction: 0.8,
+        friction: 0.85,
         dev: {
             moving: 30,
             walking: 20,
@@ -113,7 +111,7 @@ const BULLET_CONFIG = {
         },
         round: 5,
         reload: 70,
-        weight: 2.8
+        weight: 2.7
     },
     chicken: {
         imgName: 'Egg',
@@ -147,7 +145,7 @@ const BULLET_CONFIG = {
         },
         round: 200,
         reload: 200,
-        weight: 4.5
+        weight: 4.4
     },
     rpk: {
         imgName: 'Bullet',
@@ -180,7 +178,7 @@ const BULLET_CONFIG = {
             staying: 15
         },
         round: 25,
-        reload: 30,
+        reload: 35,
         weight: 0.5
     },
     revolver: {
@@ -291,6 +289,7 @@ parentPort.on('message', (result) => { // refresh move
     switch (result.name) {
         case 'request':
             // { gunners, map, myIndex } = result;
+
             gunners = result.gunners;
             map = result.map;
             myIndex = result.myIndex;
@@ -301,7 +300,6 @@ parentPort.on('message', (result) => { // refresh move
 
             gunner = gunners[myIndex];
             blood = gunner.blood;
-            // console.log(gunner.blood)
             move = gunner.move;
             bullets = gunner.bullets;
             break;
@@ -830,6 +828,4 @@ myJob = setInterval(() => {
             normalArr,
         },
     });
-
-    // console.log(Date.now() - ping);
 }, 30);
