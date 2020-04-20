@@ -330,6 +330,20 @@ io.on('connection', function(socket) {
         }
     })
 
+    socket.on('room chat', text => {
+        let room = getRoom(socket);
+        if (!room) return;
+
+        if (text.length > 50 || Date.now() - socket.lastChat < 1000)
+            return;
+
+        io.to(room.setting.id).emit('room chat', {
+            id: socket.id,
+            text
+        });
+        socket.lastChat = Date.now();
+    })
+
     socket.on('room create', ({ text, maxPlayer } = {}) => {
         if (getRoom(socket))
             return;
