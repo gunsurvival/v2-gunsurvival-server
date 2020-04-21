@@ -190,14 +190,17 @@ let addWorker = (socket) => {
 
         //update bag
         let gun = gunner.bag.arr[gunner.bag.index];
-        let updateGun = result.bagArr[result.bagArr.findIndex(e => e.name == gun.name)];
-        if (gun.isReloading == !updateGun.isReloading) {
-            if (updateGun.isReloading)
-                socket.emit('gun reloading');
-            else
-                socket.emit('gun reloaded', updateGun);
+        let indexGun = result.bagArr.findIndex(e => e.name == gun.name);
+        if (indexGun != -1) {
+            let updateGun = result.bagArr[indexGun];
+            if (gun.isReloading !== updateGun.isReloading) {
+                if (updateGun.isReloading)
+                    io.to(setting.id).emit('gun reloading', socket.id);
+                else
+                    socket.emit('gun reloaded', updateGun);
+            }
+            gunner.bag.arr = result.bagArr;
         }
-        gunner.bag.arr = result.bagArr;
 
         //cool down gun or bullet 
         gunner.holdingCoolDown = result.holdingCoolDown;
@@ -282,6 +285,10 @@ app.use(session({
 }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+app.get('/', (req, res) => {
+    res.send('Apache is functioning normally<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>đùa thôi :v server nodejs mà ;))');
+})
 
 app.get('/list-images', (req, res) => {
     res.send(listImages);
