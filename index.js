@@ -190,6 +190,8 @@ let addWorker = (socket) => {
 
         //update bag
         let gun = gunner.bag.arr[gunner.bag.index];
+        if (typeof(gun) == "undefined")
+            return;
         let indexGun = result.bagArr.findIndex(e => e.name == gun.name);
         if (indexGun != -1) {
             let updateGun = result.bagArr[indexGun];
@@ -344,6 +346,10 @@ io.on('connection', function(socket) {
         if (text.length > 50 || Date.now() - socket.lastChat < 1000)
             return;
 
+        text = text.split('<').join('');
+        text = text.split('>').join('');
+        text = text.split('/').join('');
+
         io.to(room.setting.id).emit('room chat', {
             id: socket.id,
             text
@@ -359,6 +365,9 @@ io.on('connection', function(socket) {
             socket.emit('dialog alert', 'hack cc');
             return;
         }
+        text = text.split('<').join('');
+        text = text.split('>').join('');
+        text = text.split('/').join('');
         rooms.push({
             map: [],
             gunners: [],
