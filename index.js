@@ -13,13 +13,6 @@ function shuffle(arr) { // thuật toán bogo-sort
     return arr; //Bogosort with no điều kiện dừng
 }
 
-function deXss(str) {
-    str = str.split("<").join("");
-    str = str.split(">").join("");
-    str = str.split("/").join("");
-    return str;
-}
-
 const KEY_NAME = {
     16: "shift",
     82: "r",
@@ -40,6 +33,7 @@ const cors = require("cors");
 const session = require("express-session");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const xssFilters = require('xss-filters');
 const random = require("random");
 const port = process.env.PORT || 8080;
 
@@ -333,7 +327,7 @@ io.on("connection", function(socket) {
 
     socket.on("name", name => {
         if (name.length <= 30) {
-            name = deXss(name);
+            name = xssFilters.inHTMLData(name);
             socket.name = name;
         }
     })
@@ -344,7 +338,7 @@ io.on("connection", function(socket) {
 
         if (text.length > 100)
             return;
-        text = deXss(text);
+        text = xssFilters.inHTMLData(text);
         room.addChat(text, socket);
     })
 
@@ -359,7 +353,7 @@ io.on("connection", function(socket) {
             return;
         }
 
-        text = deXss(text);
+        text = xssFilters.inHTMLData(text);
 
         let Modes = {
             Creative,
@@ -428,60 +422,6 @@ io.on("connection", function(socket) {
             console.log(message)
             socket.emit("dialog alert", message);
         });
-        
-        // socket.join(joinRoomID, () => {
-            
-        //     setting.playing.push(socket.id);
-            
-
-        //     shuffle(allWeapons);
-
-        //     gunners.push({
-        //         type: "Gunner",
-        //         name: socket.name,
-        //         size: 1,
-        //         id: socket.id,
-        //         move: {
-        //             up: false,
-        //             down: false,
-        //             left: false,
-        //             right: false
-        //         },
-        //         pos: {
-        //             x: random.int(-WORLDSIZE.width / 2, WORLDSIZE.width / 2),
-        //             y: random.int(-WORLDSIZE.height / 2, WORLDSIZE.height / 2)
-        //         },
-        //         degree: 0,
-        //         status: {
-        //             hideintree: false
-        //         },
-        //         bullets: [],
-        //         firing: false,
-        //         blood: 100,
-        //         killedBy: "i dont know :/",
-        //         bag: {
-        //             arr: [{ ...allWeapons[0] }, { ...allWeapons[1] }],
-        //             index: 0,
-        //         },
-        //         holdingCoolDown: 0,
-        //         keydown: {}
-        //     });
-
-        //     let indexGunner = gunners.length - 1;
-        //     let gunner = gunners[indexGunner];
-
-        //     room.bullets.push({
-        //         id: gunner.id,
-        //         type: "Bullet",
-        //         arr: gunner.bullets
-        //     })
-
-        //     //worker job (có nhiều loại worker cho mỗi mode)
-
-        //     addWorker(socket);
-
-        //     // io.to(roomID).emit("new gunner", gunner);
-        // });
     })
 
     socket.on("room leave", () => {

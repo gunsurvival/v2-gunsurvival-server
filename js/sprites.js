@@ -33,16 +33,6 @@ class Sprite {
     }
 }
 
-class Bullet extends Sprite {
-    constructor(config) {
-        super(config);
-    }
-
-    update() {
-
-    }
-}
-
 class Human extends Sprite {
     constructor(config) {
         super(config);
@@ -179,6 +169,16 @@ class Terrorist extends Human {
         super(config);
         this.type = "Gunner";
         this.bullets = [];
+    }
+}
+
+class Bullet extends Sprite {
+    constructor(config) {
+        super(config);
+    }
+
+    update() {
+
     }
 }
 
