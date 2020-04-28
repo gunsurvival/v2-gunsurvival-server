@@ -4,7 +4,7 @@ const random = require('random');
 const randomNormal = require('random-normal');
 const { Point, Rectangle, QuadTree, Circle } = require(`${MY_MODULE_DIR}quadtree.js`);
 const { BULLET_CONFIG, REAL_SIZE, MINUS_SIZE } = require(`${MY_MODULE_DIR}config.js`);
-const { degreesToRadians, radiansToDegrees, movingSpeed, checkCollide } = require(`${MY_MODULE_DIR}common.js`);
+const { degreesToRadians, radiansToDegrees, movingSpeed, checkCollide, movePlayer } = require(`${MY_MODULE_DIR}common.js`);
 
 const {
     workerData,
@@ -12,54 +12,28 @@ const {
 } = require('worker_threads');
 
 let {
-    gunners,
-    map,
-    myIndex,
-    worldSize
+    myId,
+    room
 } = workerData;
 
-let gunner = gunners[myIndex];
-let {
-    move
-} = gunner;
+let myGunnerIndex = room.activeObjects.gunners.findIndex(e => e.id == myId);
+let gunner = gunners[myGunnerIndex];
 
-let bullets = [];
-let position = gunner.pos;
 let bulletID = 0;
-let blood = 100;
-let killedBy = "i dont know :/";
-
-let treesCollide = [];
-let lastTreesCollide = []; // lastTreesCollide is last treesCollide
-let lastWeaponHolding = "";
 let myJob;
-let staticObjects = [];
-let activeObjects = [];
 
 let boundary = new Rectangle(0, 0, worldSize.width, worldSize.height);
 
-let qtreeActiveStatic = new QuadTree(boundary, 4); // quadtree cho vật tĩnh (map)
+let qtreeStatic = new QuadTree(boundary, 4); // quadtree cho vật tĩnh (map)
 for (let object of map) {
     let point = new Point(object.pos.x, object.pos.y, object);
-    qtreeActiveStatic.insert(point);
+    qtreeStatic.insert(point);
 }
 
 parentPort.on('message', (result) => { // refresh move
     switch (result.name) {
-        case 'request':
-            // { gunners, map, myIndex } = result;
-            allBullets = result.allBullets;
-            gunners = result.gunners;
-            myIndex = result.myIndex;
-            if (myIndex == -1) {
-                clearInterval(myJob);
-                return;
-            }
-
-            gunner = gunners[myIndex];
-            blood = gunner.blood;
-            move = gunner.move;
-            bullets = gunner.bullets;
+        case 'request':            
+            room = result.room;
             break;
     }
 });
@@ -106,29 +80,7 @@ myJob = setInterval(() => {
 
     let lastPosition = { ...position }; // cái này để check cái va chạm ô vuông phía dưới
 
-    for (let i in move) {
-        if (move[i]) {
-            checkMoving = true;
-            switch (i) {
-                case 'up':
-                    if (position.y > -worldSize.height / 2 - 200)
-                        position.y -= movingSpeed(gunner);
-                    break;
-                case 'down':
-                    if (position.y < worldSize.height / 2 + 200)
-                        position.y += movingSpeed(gunner);
-                    break;
-                case 'left':
-                    if (position.x > -worldSize.width / 2 - 199)
-                        position.x -= movingSpeed(gunner);
-                    break;
-                case 'right':
-                    if (position.x < worldSize.width / 2 + 200)
-                        position.x += movingSpeed(gunner);
-                    break;
-            }
-        }
-    }
+    movePlayer(gunner);
 
     let deleteBullets = [];
 
@@ -311,9 +263,6 @@ myJob = setInterval(() => {
                 if (checkCollide(bullet.pos, bRadius, other)) {
                     switch (other.type) {
                         case 'Rock':
-                            // bullet.speed.x *= 0.5;
-                            // bullet.speed.y *= 0.5;
-
                             if (bullet.name == 'rpg' && !bullet.delete) {
                                 bullet.delete = true;
                                 for (let i = 0; i < 20; i++) {

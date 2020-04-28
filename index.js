@@ -23,7 +23,11 @@ function deXss(str) {
 const KEY_NAME = {
     16: "shift",
     82: "r",
-    71: "g"
+    71: "g",
+    87: "up",
+    65: "left",
+    83: "down",
+    68: "right"
 }
 
 const express = require("express");
@@ -37,14 +41,13 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const random = require("random");
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 8080;
+
+//game
+
+const { Mode, Creative, King } = require(`./js/modes/mode.js`);
+
 let listImages = [];
-const direction = {
-    87: "up",
-    65: "left",
-    83: "down",
-    68: "right"
-};
 const WORLDSIZE = {
     width: 4000,
     height: 2000
@@ -158,6 +161,14 @@ function clearArray(arr, method) {
     }
 }
 
+function getAttrByArray(varible, elements) {
+    if (elements.length > 1) {
+        return getAttrByArray(varible[elements.splice(0, 1)[0]], elements);
+    } else {
+        return varible[elements[0]];
+    }
+}
+
 let updateBlood = function(result) {
     let { gunner, workers, socket } = this;
 
@@ -239,12 +250,12 @@ let updateBullets = function(result) {
 let updatePostition = function(result) {
     let { gunner } = this;
     gunner.pos = result.position;
-    if (result.treesCollide.addArr.length > 0) {
-        io.to(setting.id).emit("addTreeShake", result.treesCollide.addArr);
-    }
 }
 
 let updateTreeCollide = function(result) {
+    if (result.treesCollide.addArr.length > 0) {
+        io.to(setting.id).emit("addTreeShake", result.treesCollide.addArr);
+    }
     if (result.treesCollide.spliceArr.length > 0) {
         io.to(setting.id).emit("spliceTreeShake", result.treesCollide.spliceArr);
     }
@@ -263,107 +274,7 @@ let updateTreeCollide = function(result) {
             });
         gunner.status.hideintree = false;
     }
-}
-
-let addWorker = (socket) => {
-    let room = getRoom(socket);
-    if (!room) return;
-    let { setting, map, gunners } = room;
-
-    let indexG = gunners.findIndex(e => e.id == socket.id);
-    if (indexG == -1)
-        return;
-    let gunner = gunners[indexG];
-
-    workers.push({
-        id: gunner.id,
-        worker: new Worker(`${__dirname}/modes/${setting.mode}.js`, {
-            workerData: {
-                gunners,
-                map,
-                myIndex: indexG,
-                worldSize: WORLDSIZE
-            }
-        })
-    });
-
-    let worker = workers[workers.length - 1].worker;
-
-    let data = {
-        gunner,
-        worker,
-        socket
-    }
-
-    switch (setting.mode) {
-        case "creative":
-            worker.on("message", result => {
-                //blood of mine
-                updateBlood.apply(data, [result]);
-                //update bag
-                updateBag.apply(data, [result]);
-                //cool down gun or bullet 
-                gunner.holdingCoolDown = result.holdingCoolDown;
-                //bullet of mine
-                updateBullets.apply(data, [result]);
-                //position of mine
-                updatePostition.apply(data, [result]);
-                //tree collide
-                updateTreeCollide.apply(data, [result]);
-                // ------------lam xong cac cong viec tren thi gui lai gia tri cho service-----------
-                worker.postMessage({
-                    name: "request",
-                    gunners,
-                    allBullets: room.bullets,
-                    myIndex: gunners.indexOf(gunner)
-                });
-                // -----------------------lam xong cac cong viec tren thi gui lai gia tri---------------
-            })
-        break;
-        case "king":
-            worker.on("message", result => {
-                //blood of mine
-                if (updateBlood.apply(data, [result]) == "dead") {
-                    while (result.maxBlood > 0) {
-                        let randomValue = random.int(10, 20);
-                        if (result.maxBlood < randomValue)
-                            break;
-                        result.maxBlood -= randomValue;
-                        room.activeObject.push({
-                            pos: {
-                                x: random.int(gunner.pos.x - gunner.size*60, gunner.pos.x + gunner.size*60),
-                                y: random.int(gunner.pos.y - gunner.size*60, gunner.pos.y + gunner.size*60)
-                            },
-                            size: randomValue,
-                            degree: 0,
-                            name: "score",
-                            id: `${gunner.name}_score_${room.activeObject.length}`
-                        })
-                    }
-                }
-                //update bag
-                updateBag.apply(data, [result]);
-                //cool down gun or bullet 
-                gunner.holdingCoolDown = result.holdingCoolDown;
-                //bullet of mine
-                updateBullets.apply(data, [result]);
-                //position of mine
-                updatePostition.apply(data, [result]);
-                //tree collide
-                updateTreeCollide.apply(data, [result]);
-                // ------------lam xong cac cong viec tren thi gui lai gia tri cho service-----------
-                worker.postMessage({
-                    name: "request",
-                    gunners,
-                    allBullets: room.bullets,
-                    myIndex: gunners.indexOf(gunner)
-                });
-                // -----------------------lam xong cac cong viec tren thi gui lai gia tri---------------
-            })
-        break;
-    }
-    
-}
+}    
 
 
 app.use(cors());
@@ -421,10 +332,8 @@ io.on("connection", function(socket) {
     socket.name = socket.id;
 
     socket.on("name", name => {
-        if (name.length <= 20) {
-            name = name.split("<").join("");
-            name = name.split(">").join("");
-            name = name.split("/").join("");
+        if (name.length <= 30) {
+            name = deXss(name);
             socket.name = name;
         }
     })
@@ -433,22 +342,14 @@ io.on("connection", function(socket) {
         let room = getRoom(socket);
         if (!room) return;
 
-        if (text.length > 50 || Date.now() - socket.lastChat < 1000)
+        if (text.length > 100)
             return;
-
-        text = text.split("<").join("");
-        text = text.split(">").join("");
-        text = text.split("/").join("");
-
-        io.to(room.setting.id).emit("room chat", {
-            id: socket.id,
-            text
-        });
-        socket.lastChat = Date.now();
+        text = deXss(text);
+        room.addChat(text, socket);
     })
 
     socket.on("room create", ({ text, maxPlayer, mode } = {}) => {
-        let validMode = ["creative", "king"];
+        let validMode = ["Creative", "King"];
 
         if (getRoom(socket) || validMode.indexOf(mode) == -1)
             return;
@@ -460,90 +361,24 @@ io.on("connection", function(socket) {
 
         text = deXss(text);
 
-        rooms.push({
-            activeObjects: [],
-            staticObjects: [],
-            setting: {
-                master: socket.name,
-                mode,
-                id: roomIDTick++,
-                text: text || "Join me now bro",
-                maxPlayer: maxPlayer || 3,
-                time: Date.now(),
-                playing: []
-            }
-        });
-        console.log(`1 room created (total ${rooms.length} rooms)`);
-
-        let room = rooms[rooms.length - 1];
-        let { activeObjects, staticObjects, setting } = room;
-
-        let roomID = setting.id;
-        // room.map = JSON.parse(`[{"pos":{"x":-250,"y":-200},"size":1,"degree":0,"name":"Tree","id":0},{"pos":{"x":250,"y":-200},"size":1,"degree":0,"name":"Tree","id":1},{"pos":{"x":-250,"y":200},"size":1,"degree":0,"name":"Tree","id":2},{"pos":{"x":300,"y":200},"size":1,"degree":0,"name":"Tree","id":3},{"pos":{"x":562.5,"y":0},"size":1,"degree":0,"name":"Rock","id":4},{"pos":{"x":0,"y":-412.5},"size":1,"degree":0,"name":"Rock","id":5},{"pos":{"x":-525,"y":0},"size":1,"degree":0,"name":"Rock","id":6},{"pos":{"x":37.5,"y":412.5},"size":1,"degree":0,"name":"Rock","id":7},{"pos":{"x":472.50000000000006,"y":-402.5},"size":1,"degree":0,"name":"Box_wooden","id":8},{"pos":{"x":0,"y":-700},"size":1,"degree":0,"name":"Box_wooden","id":9},{"pos":{"x":-440,"y":-400},"size":1,"degree":0,"name":"Box_wooden","id":10},{"pos":{"x":-440,"y":440},"size":1,"degree":0,"name":"Box_wooden","id":11},{"pos":{"x":520,"y":400},"size":1,"degree":0,"name":"Box_wooden","id":12},{"pos":{"x":250,"y":0},"size":1,"degree":0,"name":"Box_emty","id":13},{"pos":{"x":25,"y":200},"size":1,"degree":0,"name":"Box_emty","id":14},{"pos":{"x":-225,"y":0},"size":1,"degree":0,"name":"Box_emty","id":15},{"pos":{"x":0,"y":-200},"size":1,"degree":0,"name":"Box_emty","id":16}]`);
-
-        for (let i = 0; i <= 70; i++) {
-            staticObjects.map.push({
-                pos: {
-                    x: random.float(-WORLDSIZE.width / 2, WORLDSIZE.width / 2).toFixed(2) - 0,
-                    y: random.float(-WORLDSIZE.height / 2, WORLDSIZE.height / 2).toFixed(2) - 0
-                },
-                size: random.float(0.5, 1.5).toFixed(3) - 0, //add more size
-                degree: 0,
-                type: ["Rock", "Tree"][random.int(0, 1)],
-                id: i
-            })
+        let Modes = {
+            Creative,
+            King
         }
 
-        setTimeout(() => {
-            if (room.setting.playing.length <= 0) {
-                clearInterval(room.interval);
-                rooms.splice(rooms.findIndex(e => e.id == room.setting.id), 1);
-                io.emit("room delete", room.setting.id);
-                return;
-            }
-        }, 5000);
+        rooms.push(new Modes[mode]({ // lỗi ở server thôi 
+            id: roomIDTick++, // id cua phong
+            text, // dong thong diep
+            master: socket.id, // chu phong
+            maxPlayer, // so luong choi choi
+            io // server cua game
+        }));
 
-        room.interval = setInterval(() => {
-            let gunnersData = [];
-            for (let groupName in activeObjects) {
-                let group = activeObjects[groupName];
-                switch (groupName) {
-                    case "gunner":
-                        for (let gunner of group) {
-                            let { name, pos, degree, bag, bullets, dead, blood } = gunner;
-                            let privateData = { // private data nghĩa là khi nào đc sự cho phép của server thì client mới đọc đc (ví dụ trốn trong cây thì ko gửi)
-                                name,
-                                pos,
-                                degree,
-                                bag
-                            }
-
-                            let publicData = { // public data đc client đọc 1 cách tự do
-                                bulletsData: bullets, // vì trùng tên trong client nên đổi
-                                dead: blood <= 0
-                            }
-
-                            if (gunner.status.hideintree) {
-                                io.to(gunner.id).emit("update private", privateData); //update private là update chỉ riêng cho mình
-                                privateData = undefined; // xóa đi vì riêng tư, ko đc gửi cho tất cả user
-                            }
-
-                            gunnersData.push({
-                                id: gunner.id,
-                                privateData,
-                                publicData
-                            })
-                        }
-                        io.to(roomID).emit("update game", gunnersData);
-                        break;
-                }
-            }
-
-            
-        }, 30);
+        let room = rooms[rooms.length - 1];
+        room.start(); // start the interval
 
         io.emit("room create", room.setting);
-        socket.emit("room created", roomID);
+        socket.emit("room created", room.setting.id);
     })
 
     socket.on("room respawn", () => {
@@ -578,79 +413,75 @@ io.on("connection", function(socket) {
     })
 
     socket.on("room join", (joinRoomID) => {
-        console.log(`1 room join (total ${rooms.length}) rooms`);
-        if (getRoom(socket)) return;
+        if (getRoom(socket)) return; // neu da join roi thi huy bo
 
-        let roomID = joinRoomID;
-        let roomIndex = rooms.findIndex(e => e.setting.id == roomID);
-        if (roomIndex == -1) // checking exist of room join id
-            return socket.emit("dialog alert", {
-                text: "Không tìm thấy phòng",
-                preConfirm_string: "socket.emit("rooms update");"
-            });
+        let indexRoom = rooms.findIndex(e => e.id == joinRoomID);
+        if (indexRoom == -1) // khong tim thay phong
+            return socket.emit("Room not found!");
 
-        let room = rooms[roomIndex];
-        let { setting, map, gunners } = room;
+        let room = rooms[indexRoom];
 
-        if (setting.playing.length >= setting.maxPlayer) {
-            socket.emit("dialog alert", "Phòng đã đủ người chơi :))");
-            return;
-        }
-
-        socket.emit("map", map);
-        socket.join(joinRoomID, () => {
+        room.join(socket).then(() => {
             roomIDJoined[socket.id] = joinRoomID;
-            setting.playing.push(socket.id);
-            io.emit("room update", setting); // update room table
-
-            shuffle(allWeapons);
-
-            gunners.push({
-                type: "Gunner",
-                name: socket.name,
-                size: 1,
-                id: socket.id,
-                move: {
-                    up: false,
-                    down: false,
-                    left: false,
-                    right: false
-                },
-                pos: {
-                    x: random.int(-WORLDSIZE.width / 2, WORLDSIZE.width / 2),
-                    y: random.int(-WORLDSIZE.height / 2, WORLDSIZE.height / 2)
-                },
-                degree: 0,
-                status: {
-                    hideintree: false
-                },
-                bullets: [],
-                firing: false,
-                blood: 100,
-                killedBy: "i dont know :/",
-                bag: {
-                    arr: [{ ...allWeapons[0] }, { ...allWeapons[1] }],
-                    index: 0,
-                },
-                holdingCoolDown: 0,
-                keydown: {}
-            });
-
-            let indexGunner = gunners.length - 1;
-            let gunner = gunners[indexGunner];
-
-            room.bullets.push({
-                id: gunner.id,
-                type: "Bullet",
-                arr: gunner.bullets
-            })
-
-            //worker job (có nhiều loại worker cho mỗi mode)
-
-            addWorker(socket);
-
-            // io.to(roomID).emit("new gunner", gunner);
+            io.emit("room update", room.setting); // update room table
+        }).catch(message => {
+            console.log(message)
+            socket.emit("dialog alert", message);
         });
+        
+        // socket.join(joinRoomID, () => {
+            
+        //     setting.playing.push(socket.id);
+            
+
+        //     shuffle(allWeapons);
+
+        //     gunners.push({
+        //         type: "Gunner",
+        //         name: socket.name,
+        //         size: 1,
+        //         id: socket.id,
+        //         move: {
+        //             up: false,
+        //             down: false,
+        //             left: false,
+        //             right: false
+        //         },
+        //         pos: {
+        //             x: random.int(-WORLDSIZE.width / 2, WORLDSIZE.width / 2),
+        //             y: random.int(-WORLDSIZE.height / 2, WORLDSIZE.height / 2)
+        //         },
+        //         degree: 0,
+        //         status: {
+        //             hideintree: false
+        //         },
+        //         bullets: [],
+        //         firing: false,
+        //         blood: 100,
+        //         killedBy: "i dont know :/",
+        //         bag: {
+        //             arr: [{ ...allWeapons[0] }, { ...allWeapons[1] }],
+        //             index: 0,
+        //         },
+        //         holdingCoolDown: 0,
+        //         keydown: {}
+        //     });
+
+        //     let indexGunner = gunners.length - 1;
+        //     let gunner = gunners[indexGunner];
+
+        //     room.bullets.push({
+        //         id: gunner.id,
+        //         type: "Bullet",
+        //         arr: gunner.bullets
+        //     })
+
+        //     //worker job (có nhiều loại worker cho mỗi mode)
+
+        //     addWorker(socket);
+
+        //     // io.to(roomID).emit("new gunner", gunner);
+        // });
     })
 
     socket.on("room leave", () => {
@@ -721,11 +552,8 @@ io.on("connection", function(socket) {
     socket.on("gunner degree", (degree) => {
         let room = getRoom(socket);
         if (!room) return;
-        let { gunners, setting } = room;
-
-        let indexGunner = gunners.findIndex(e => e.id == socket.id);
-        if (indexGunner == -1) return;
-        gunners[indexGunner].degree = degree;;
+        if (!isNaN(degree))
+            socket.gunner.degree = degree;
     })
 
     socket.on("pingms", time => {
@@ -735,53 +563,29 @@ io.on("connection", function(socket) {
     socket.on("keydown", keycode => {
         let room = getRoom(socket);
         if (!room) return;
-        let { gunners } = room;
 
-        let indexGunner = gunners.findIndex(e => e.id == socket.id);
-        if (indexGunner == -1) return;
-        let gunner = gunners[indexGunner];
-
-        if ([87, 65, 83, 68].indexOf(keycode) != -1)
-            gunner.move[direction[keycode]] = true;
-
-        gunner.keydown[KEY_NAME[keycode] || "idk"] = true;
+        if (KEY_NAME[keycode])
+            socket.gunner.onKeyDown(KEY_NAME[keycode])
     })
 
     socket.on("keyup", keycode => {
         let room = getRoom(socket);
         if (!room) return;
-        let { gunners } = room;
 
-        let indexGunner = gunners.findIndex(e => e.id == socket.id);
-        if (indexGunner == -1) return;
-        let gunner = gunners[indexGunner];
-
-        if ([87, 65, 83, 68].indexOf(keycode) != -1)
-            gunner.move[direction[keycode]] = false;
-
-        gunner.keydown[KEY_NAME[keycode] || "idk"] = false;
+        if (KEY_NAME[keycode])
+            socket.gunner.onKeyUp(KEY_NAME[keycode])
     })
 
-    socket.on("firedown", () => {
+    socket.on("mouseDown", () => {
         let room = getRoom(socket);
         if (!room) return;
-        let { gunners } = room;
-
-        let indexGunner = gunners.findIndex(e => e.id == socket.id);
-        if (indexGunner == -1) return;
-        let gunner = gunners[indexGunner];
-        gunner.firing = true;
+        socket.gunner.onMouseDown("left");
     })
 
-    socket.on("fireup", () => {
+    socket.on("mouseUp", () => {
         let room = getRoom(socket);
         if (!room) return;
-        let { gunners } = room;
-
-        let indexGunner = gunners.findIndex(e => e.id == socket.id);
-        if (indexGunner == -1) return;
-        let gunner = gunners[indexGunner];
-        gunner.firing = false;
+        socket.gunner.onMouseUp("left");
     })
 
     socket.on("rooms update", () => {
@@ -794,12 +598,8 @@ io.on("connection", function(socket) {
     socket.on("weapon change", data => {
         let room = getRoom(socket);
         if (!room) return;
-        let { gunners } = room;
 
-        let indexGunner = gunners.findIndex(e => e.id == socket.id);
-        if (indexGunner == -1) return;
-        let gunner = gunners[indexGunner];
-        let bag = gunner.bag;
+        let bag = socket.gunner.bag;
         switch (data.method) {
             case "number":
                 if (data.value == bag.index)

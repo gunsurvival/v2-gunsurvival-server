@@ -4,12 +4,9 @@ const { BULLET_CONFIG, REAL_SIZE, MINUS_SIZE } = require(`${MY_MODULE_DIR}config
 
 module.exports = {
 
-    // REAL_SIZE,
-    // MINUS_SIZE,
-    // BULLET_CONFIG,
-    // collideCirclePoly,
-    // collideRectCircle,
-    // collideRectCircle,
+    REAL_SIZE,
+    MINUS_SIZE,
+    BULLET_CONFIG,
 
     degreesToRadians: function(degrees) {
         return degrees * (Math.PI / 180);
@@ -82,5 +79,46 @@ module.exports = {
                 return collide.collideRectCircle(object.pos.x - newWidth / 2, object.pos.y - newHeight / 2, newWidth, newHeight, circlePos.x, circlePos.y, radius);
                 break;
         }
+    },
+
+    movePlayer: function() {
+        for (let i in move) {
+            if (move[i]) {
+                checkMoving = true;
+                switch (i) {
+                    case 'up':
+                        if (position.y > -worldSize.height / 2 - 200)
+                            position.y -= movingSpeed(gunner);
+                        break;
+                    case 'down':
+                        if (position.y < worldSize.height / 2 + 200)
+                            position.y += movingSpeed(gunner);
+                        break;
+                    case 'left':
+                        if (position.x > -worldSize.width / 2 - 200)
+                            position.x -= movingSpeed(gunner);
+                        break;
+                    case 'right':
+                        if (position.x < worldSize.width / 2 + 200)
+                            position.x += movingSpeed(gunner);
+                        break;
+                }
+            }
+        }
+    },
+
+    shuffle: function(arr) { // thuật toán bogo-sort
+        let count = arr.length,
+            temp, index;
+
+        while (count > 0) {
+            index = Math.floor(Math.random() * count);
+            count--;
+            temp = arr[count];
+            arr[count] = arr[index];
+            arr[index] = temp;
+        }
+
+        return arr; //Bogosort with no điều kiện dừng
     }
 }
