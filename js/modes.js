@@ -1,5 +1,5 @@
-const { Circle, Rectangle, Point, QuadTree } = require("../../my_modules/quadtree.js");
-const { Sprite, Bullet, Human, Terrorist } = require(`../../js/sprites/sprite.js`);
+const { Circle, Rectangle, Point, QuadTree } = require("../my_modules/quadtree.js");
+const { Sprite, Bullet, Human, Terrorist } = require(`./sprites.js`);
 const random = require("random");
 
 class Mode {

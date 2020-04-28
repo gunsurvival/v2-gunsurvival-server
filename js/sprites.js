@@ -1,5 +1,5 @@
-const { REAL_SIZE, MINUS_SIZE, BULLET_CONFIG } = require("../../my_modules/common.js");
-const collide = require("../../my_modules/p5.collide.js");
+const { REAL_SIZE, MINUS_SIZE, BULLET_CONFIG } = require("../my_modules/common.js");
+const collide = require("../my_modules/p5.collide.js");
 
 class Sprite {
     constructor({ id, type, name, pos, size = 1, degree = 0, defaultRange = 0, getQueryRange, getBoundary } = {}) {

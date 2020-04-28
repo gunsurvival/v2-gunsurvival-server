@@ -45,7 +45,7 @@ const port = process.env.PORT || 8080;
 
 //game
 
-const { Mode, Creative, King } = require(`./js/modes/mode.js`);
+const { Mode, Creative, King } = require(`./js/modes.js`);
 
 let listImages = [];
 const WORLDSIZE = {
