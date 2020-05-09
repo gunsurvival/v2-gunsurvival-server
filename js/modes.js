@@ -1,5 +1,5 @@
-const { Circle, Rectangle, Point, QuadTree } = require("../my_modules/quadtree.js");
-const { Sprite, Bullet, Human, Terrorist } = require(`./sprites.js`);
+import { Config, Sprites, Weapons, _QuadTree } from "./utils.js";
+const { REAL_SIZE, MINUS_SIZE, ITEM_CONFIG } = Config;
 const random = require("random");
 
 class Mode {
@@ -34,82 +34,69 @@ class Mode {
         this.allWeapons = [{
                 "name": "ak47",
                 "bulletCount": 30,
-                "magazine": 10,
-                "isReloading": false
+                "magazine": 10
             },
             {
                 "name": "m4a1",
                 "bulletCount": 30,
-                "magazine": 10,
-                "isReloading": false
+                "magazine": 10
             },
             {
                 "name": "awp",
                 "bulletCount": 5,
-                "magazine": 10,
-                "isReloading": false
+                "magazine": 10
             },
             {
                 "name": "paint",
                 "bulletCount": 10,
-                "magazine": 10,
-                "isReloading": false
+                "magazine": 10
             },
             {
                 "name": "shotgun",
                 "bulletCount": 5,
-                "magazine": 10,
-                "isReloading": false
+                "magazine": 10
             },
             {
                 "name": "chicken",
                 "bulletCount": 100,
-                "magazine": 0,
-                "isReloading": false
+                "magazine": 0
             },
             {
                 "name": "gatlin",
                 "bulletCount": 200,
-                "magazine": 1,
-                "isReloading": false
+                "magazine": 1
             },
             {
                 "name": "rpk",
                 "bulletCount": 80,
-                "magazine": 2,
-                "isReloading": false
+                "magazine": 2
             },
             {
                 "name": "uzi",
                 "bulletCount": 25,
-                "magazine": 10,
-                "isReloading": false
+                "magazine": 10
             },
             {
                 "name": "revolver",
                 "bulletCount": 8,
-                "magazine": 10,
-                "isReloading": false
+                "magazine": 10
             },
             {
                 "name": "p90",
                 "bulletCount": 50,
-                "magazine": 5,
-                "isReloading": false
+                "magazine": 5
             },
             {
                 "name": "rpg",
                 "bulletCount": 100,
-                "magazine": 0,
-                "isReloading": false
+                "magazine": 0
             }
         ];
 
         this.activeQtree;
         this.staticQtree;
         this.qtreeSetting = {
-            // import dau ?
-            boundary: new Rectangle(0, 0, this.size.width, this.size.height),
+            boundary: new _QuadTree.Rectangle(0, 0, this.size.width, this.size.height),
             split: 4
         }
     }
@@ -130,20 +117,29 @@ class Mode {
                                 id,
                                 name,
                                 pos,
-                                degree,
                                 bag,
+                                degree,
                                 blood,
                                 status
                             } = object;
 
-                            // debugger;
+                            let _bag = {
+                                arr: [],
+                                index: bag.index
+                            };
+                            for (let item of bag.arr)
+                                _bag.arr.push({
+                                    name: item.name,
+                                    bulletCount: item.bulletCount,
+                                    magazine: item.magazine
+                                });
 
                             publicData = {
                                 id,
                                 name,
                                 pos,
+                                bag: _bag,
                                 degree,
-                                bag,
                                 dead: blood <= 0
                             };
 
@@ -168,7 +164,7 @@ class Mode {
                                 pos,
                                 size,
                                 name,
-                                owner,
+                                owner: ownerID,
                                 speed,
                                 imgName
                             } = object;
@@ -178,7 +174,7 @@ class Mode {
                                 pos,
                                 size,
                                 name,
-                                owner,
+                                ownerID,
                                 speed,
                                 imgName
                             }
@@ -219,7 +215,7 @@ class Mode {
         switch (mode) {
             case "random":
                 for (let i = 0; i <= (70 / 2500) * this.size.width; i++) {
-                    this.staticObjects.map.push(new Sprite({
+                    this.staticObjects.map.push(new Sprites.Sprite({
                         pos: {
                             x: random.float(-this.size.width / 2, this.size.width / 2).toFixed(1) - 0,
                             y: random.float(-this.size.height / 2, this.size.height / 2).toFixed(1) - 0
@@ -234,7 +230,8 @@ class Mode {
                                 type: "Circle",
                                 data: [this.pos.x, this.pos.y, this.getQueryRange()]
                             }
-                        }
+                        },
+                        room: this.room
                     }));
                     let newRange = this.staticObjects.map[this.staticObjects.map.length - 1].getQueryRange();
                     if (this.biggestStaticDiameterRange < newRange)
@@ -249,11 +246,11 @@ class Mode {
 
     createStaticQtree() {
         let biggestDiameterRange = 0;
-        this.staticQtree = new QuadTree(this.qtreeSetting.boundary, this.qtreeSetting.split);
+        this.staticQtree = new _QuadTree.QuadTree(this.qtreeSetting.boundary, this.qtreeSetting.split);
         for (let groupName in this.staticObjects) {
             let group = this.staticObjects[groupName];
             for (let object of group) {
-                this.staticQtree.insert(new Point(object.pos.x, object.pos.y, object));
+                this.staticQtree.insert(new _QuadTree.Point(object.pos.x, object.pos.y, object));
                 if (biggestDiameterRange < object.getQueryRange())
                     biggestDiameterRange = object.getQueryRange();
             }
@@ -262,7 +259,7 @@ class Mode {
     }
 
     _createActiveQtree() {
-        this.activeQtree = new QuadTree(this.qtreeSetting.boundary, this.qtreeSetting.split);
+        this.activeQtree = new _QuadTree.QuadTree(this.qtreeSetting.boundary, this.qtreeSetting.split);
         // them object.update vi chay 2 lan vong lap ton thoi gian
         // insert vao sau 1 vat update se nhanh hon
         let biggestDiameterRange = 0;
@@ -270,7 +267,7 @@ class Mode {
             let group = this.activeObjects[groupName];
             for (let object of group) {
                 object.update(); // doc dong tren
-                this.activeQtree.insert(new Point(object.pos.x, object.pos.y, object));
+                this.activeQtree.insert(new _QuadTree.Point(object.pos.x, object.pos.y, object));
                 if (biggestDiameterRange < object.getQueryRange())
                     biggestDiameterRange = object.getQueryRange();
             }
@@ -281,7 +278,16 @@ class Mode {
     join(socket) { // kiem tra cac dieu dien de vao room
         return new Promise((resolve, reject) => {
             if (this.setting.playing.length < this.setting.maxPlayer) {
-                socket.gunner = new Terrorist({
+                let guns = [];
+                for (let i = 0; i < 2; i++) {
+                    if (i > this.allWeapons.length - 1)
+                        break;
+                    let gunConfig = this.allWeapons[i];
+                    gunConfig.owner = socket.gunner;
+                    gunConfig.room = this;
+                    guns.push(new Weapons[ITEM_CONFIG[gunConfig.name].class](gunConfig));
+                }
+                socket.gunner = new Sprites.Terrorist({
                     id: socket.id,
                     name: socket.name,
                     pos: {
@@ -289,7 +295,7 @@ class Mode {
                         y: random.int(-this.size.height / 2, this.size.height / 2)
                     },
                     bag: {
-                        arr: [this.allWeapons[0], this.allWeapons[1]],
+                        arr: guns,
                         index: 0
                     },
                     defaultRange: 80,
@@ -352,7 +358,7 @@ class Creative extends Mode {
         for (let groupName in this.activeObjects) {
             let group = this.activeObjects[groupName];
             for (let object of group) {
-                let staticRange = new Circle(object.pos.x, object.pos.y, this.biggestStaticDiameterRange + object.getQueryRange() + 1);
+                let staticRange = new _QuadTree.Circle(object.pos.x, object.pos.y, this.biggestStaticDiameterRange + object.getQueryRange() + 1);
                 let staticPoints = this.staticQtree.query(staticRange);
                 for (let point of staticPoints) {
                     // debugger;
@@ -361,7 +367,7 @@ class Creative extends Mode {
                         object.collide(pointData);
                 }
 
-                let activeRange = new Circle(object.pos.x, object.pos.y, biggestActiveDiameterRange + object.getQueryRange() + 1);
+                let activeRange = new _QuadTree.Circle(object.pos.x, object.pos.y, biggestActiveDiameterRange + object.getQueryRange() + 1);
                 let activePoints = this.activeQtree.query(activeRange);
                 for (let point of activePoints) {
                     let { userData: pointData } = point;

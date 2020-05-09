@@ -1,5 +1,5 @@
-module.exports = {
-    "BULLET_CONFIG":
+const Config = {
+    "ITEM_CONFIG":
     {
         "ak47":
         {
@@ -18,7 +18,8 @@ module.exports = {
             },
             "round": 30,
             "reload": 45,
-            "weight": 1
+            "weight": 1,
+            "class": "Automatic"
         },
         "m4a1":
         {
@@ -37,7 +38,8 @@ module.exports = {
             },
             "round": 30,
             "reload": 50,
-            "weight": 1.2
+            "weight": 1.2,
+            "class": "Automatic"
         },
         "awp":
         {
@@ -56,7 +58,8 @@ module.exports = {
             },
             "round": 5,
             "reload": 110,
-            "weight": 3.7
+            "weight": 3.7,
+            "class": "Sniper"
         },
         "paint":
         {
@@ -75,7 +78,8 @@ module.exports = {
             },
             "round": 15,
             "reload": 60,
-            "weight": 2
+            "weight": 2,
+            "class": "Automatic"
         },
         "shotgun":
         {
@@ -94,7 +98,8 @@ module.exports = {
             },
             "round": 5,
             "reload": 70,
-            "weight": 2.2
+            "weight": 2.2,
+            "class": "Shotgun"
         },
         "chicken":
         {
@@ -113,7 +118,8 @@ module.exports = {
             },
             "round": 100,
             "reload": 10,
-            "weight": 1.5
+            "weight": 1.5,
+            "class": "Automatic"
         },
         "gatlin":
         {
@@ -132,7 +138,8 @@ module.exports = {
             },
             "round": 200,
             "reload": 200,
-            "weight": 4
+            "weight": 4,
+            "class": "Automatic"
         },
         "rpk":
         {
@@ -151,7 +158,8 @@ module.exports = {
             },
             "round": 80,
             "reload": 40,
-            "weight": 2.3
+            "weight": 2.3,
+            "class": "Automatic"
         },
         "uzi":
         {
@@ -170,7 +178,8 @@ module.exports = {
             },
             "round": 25,
             "reload": 35,
-            "weight": 0.5
+            "weight": 0.5,
+            "class": "Automatic"
         },
         "revolver":
         {
@@ -189,7 +198,8 @@ module.exports = {
             },
             "round": 8,
             "reload": 40,
-            "weight": 0
+            "weight": 0,
+            "class": "Pistol"
         },
         "p90":
         {
@@ -208,7 +218,8 @@ module.exports = {
             },
             "round": 50,
             "reload": 45,
-            "weight": 1
+            "weight": 1,
+            "class": "Automatic"
         },
         "rpg":
         {
@@ -227,7 +238,8 @@ module.exports = {
             },
             "round": 50,
             "reload": 45,
-            "weight": 3
+            "weight": 3,
+            "class": "rocket"
         },
         "rpg_split":
         {
@@ -235,7 +247,8 @@ module.exports = {
             "size": 0.7,
             "split": 2,
             "speed": 130,
-            "friction": 0.85
+            "friction": 0.85,
+            "class": "Automatic"
         }
     },
 
@@ -295,3 +308,5 @@ module.exports = {
         }
     }
 }
+
+module.exports = Config;

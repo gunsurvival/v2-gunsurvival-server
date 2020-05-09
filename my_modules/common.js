@@ -1,12 +1,12 @@
 const MY_MODULE_DIR = `${__dirname}/`;
 const collide = require(`${MY_MODULE_DIR}p5.collide.js`);
-const { BULLET_CONFIG, REAL_SIZE, MINUS_SIZE } = require(`${MY_MODULE_DIR}config.js`);
+const { ITEM_CONFIG, REAL_SIZE, MINUS_SIZE } = require(`${MY_MODULE_DIR}config.js`);
 
 module.exports = {
 
     REAL_SIZE,
     MINUS_SIZE,
-    BULLET_CONFIG,
+    ITEM_CONFIG,
 
     degreesToRadians: function(degrees) {
         return degrees * (Math.PI / 180);
@@ -18,7 +18,7 @@ module.exports = {
 
     movingSpeed: function(object) { // object here means gunner me 
         let speed = 7;
-        speed -= BULLET_CONFIG[object.bag.arr[object.bag.index].name].weight;
+        speed -= ITEM_CONFIG[object.bag.arr[object.bag.index].name].weight;
         if (object.keydown['shift'])
             speed *= 5/10;
         if (object.firing)
@@ -33,7 +33,7 @@ module.exports = {
         let minus = MINUS_SIZE[object.type];
         switch (object.type) {
             case 'Bullet':
-                let bRadius = REAL_SIZE[BULLET_CONFIG[object.name].imgName] * BULLET_CONFIG[object.name].size - MINUS_SIZE[BULLET_CONFIG[object.name].imgName];
+                let bRadius = REAL_SIZE[ITEM_CONFIG[object.name].imgName] * ITEM_CONFIG[object.name].size - MINUS_SIZE[ITEM_CONFIG[object.name].imgName];
                 let px = object.pos.x - object.speed.x; // previous position
                 let py = object.pos.y - object.speed.y;
                 let cx = object.pos.x; // current position
