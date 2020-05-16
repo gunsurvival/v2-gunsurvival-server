@@ -123,22 +123,11 @@ class Mode {
                                 status
                             } = object;
 
-                            let _bag = {
-                                arr: [],
-                                index: bag.index
-                            };
-                            for (let item of bag.arr)
-                                _bag.arr.push({
-                                    name: item.name,
-                                    bulletCount: item.bulletCount,
-                                    magazine: item.magazine
-                                });
-
                             publicData = {
                                 id,
                                 name,
                                 pos,
-                                bag: _bag,
+                                bag,
                                 degree,
                                 dead: blood <= 0
                             };
@@ -164,7 +153,7 @@ class Mode {
                                 pos,
                                 size,
                                 name,
-                                owner: ownerID,
+                                ownerID,
                                 speed,
                                 imgName
                             } = object;
@@ -230,8 +219,7 @@ class Mode {
                                 type: "Circle",
                                 data: [this.pos.x, this.pos.y, this.getQueryRange()]
                             }
-                        },
-                        room: this.room
+                        }
                     }));
                     let newRange = this.staticObjects.map[this.staticObjects.map.length - 1].getQueryRange();
                     if (this.biggestStaticDiameterRange < newRange)
@@ -266,7 +254,11 @@ class Mode {
         for (let groupName in this.activeObjects) {
             let group = this.activeObjects[groupName];
             for (let object of group) {
-                object.update(); // doc dong tren
+                if (object.delete) {
+                    this.deleteObject(groupName, object.id);
+                    continue;
+                }
+                object.update(this); // doc dong tren
                 this.activeQtree.insert(new _QuadTree.Point(object.pos.x, object.pos.y, object));
                 if (biggestDiameterRange < object.getQueryRange())
                     biggestDiameterRange = object.getQueryRange();
@@ -283,8 +275,7 @@ class Mode {
                     if (i > this.allWeapons.length - 1)
                         break;
                     let gunConfig = this.allWeapons[i];
-                    gunConfig.owner = socket.gunner;
-                    gunConfig.room = this;
+                    gunConfig.ownerID = socket.id;
                     guns.push(new Weapons[ITEM_CONFIG[gunConfig.name].class](gunConfig));
                 }
                 socket.gunner = new Sprites.Terrorist({
@@ -320,9 +311,7 @@ class Mode {
     }
 
     addPlayer(socket) { // them player vao room
-        if (!this.activeObjects.gunners)
-            this.activeObjects.gunners = [];
-        this.activeObjects.gunners.push(socket.gunner);
+        this.addObject("gunners", socket.gunner);
         this.setting.playing.push(socket.id);
     }
 
@@ -335,6 +324,41 @@ class Mode {
             text
         });
         socket.lastChat = Date.now();
+    }
+
+    addObject(group, data) {
+        if (!this.activeObjects[group])
+            this.activeObjects[group] = [];
+        this.activeObjects[group].push(data);
+    }
+
+    deleteObject(group, id) {
+        if (this.activeObjects[group]) {
+            let index = this.activeObjects[group].findIndex(e => e.id == id);
+            return this.activeObjects[group].splice(index, 1);
+        }
+
+        return false;
+    }
+
+    findObject(group, id) {
+        if (this.activeObjects[group]) {
+            let index = this.activeObjects[group].findIndex(e => e.id == id);
+            if (index == -1)
+                return false;
+            else
+                return this.activeObjects[group][index];
+        }
+
+        if (this.staticObjects[group]) {
+            let index = this.staticObjects[group].findIndex(e => e.id == id);
+            if (index == -1)
+                return false;
+            else
+                return this.staticObjects[group][index];
+        }
+
+        return false;
     }
 
     destroy() { // xoa room
@@ -371,6 +395,8 @@ class Creative extends Mode {
                 let activePoints = this.activeQtree.query(activeRange);
                 for (let point of activePoints) {
                     let { userData: pointData } = point;
+                    if (pointData.id == object.id)
+                        continue;
                     if (object.intersect(pointData.getBoundary()))
                         object.collide(pointData);
                 }

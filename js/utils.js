@@ -4,5 +4,6 @@ const Sprites = require("./sprites.js");
 const Weapons = require("./weapons.js");
 const _QuadTree = require("../my_modules/quadtree.js");
 const Collides = require("../my_modules/p5.collide.js");
+const Convert = require("./convert.js");
 
-export { Config, Modes, Sprites, Weapons, _QuadTree, Collides }
+export { Config, Modes, Sprites, Weapons, _QuadTree, Collides, Convert }

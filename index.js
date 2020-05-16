@@ -500,20 +500,18 @@ io.on("connection", function(socket) {
         socket.emit("pingms", time);
     })
 
-    socket.on("keydown", keycode => {
+    socket.on("keydown", key => {
         let room = getRoom(socket);
         if (!room) return;
-
-        if (KEY_NAME[keycode])
-            socket.gunner.onKeyDown(KEY_NAME[keycode])
+        console.log(key.toLowerCase());
+        socket.gunner.onKeyDown(key.toLowerCase());
     })
 
-    socket.on("keyup", keycode => {
+    socket.on("keyup", key => {
         let room = getRoom(socket);
         if (!room) return;
 
-        if (KEY_NAME[keycode])
-            socket.gunner.onKeyUp(KEY_NAME[keycode])
+        socket.gunner.onKeyUp(key.toLowerCase())
     })
 
     socket.on("mouseDown", () => {
@@ -535,29 +533,16 @@ io.on("connection", function(socket) {
         socket.emit("rooms update", roomSettings);
     })
 
-    socket.on("weapon change", data => {
+    socket.on("weapon change", index => {
         let room = getRoom(socket);
         if (!room) return;
 
         let bag = socket.gunner.bag;
-        switch (data.method) {
-            case "number":
-                if (data.value == bag.index)
-                    return;
-                if (data.value <= bag.arr.length - 1 && data.value >= 0)
-                    bag.index = data.value;
-                break;
-            case "wheel":
-                if (data.value > 0)
-                    bag.index++;
-                else
-                    bag.index--;
-                break;
-        }
-        if (bag.index > bag.arr.length - 1)
-            bag.index = 0
-        if (bag.index < 0)
-            bag.index = bag.arr.length - 1;
+        if (index == bag.index)
+            return;
+        if (index <= bag.arr.length - 1 && index >= 0)
+            bag.index = index;
+
         io.emit("weapon change", {
             id: socket.id,
             gun: bag.arr[bag.index]

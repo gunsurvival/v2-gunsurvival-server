@@ -1,17 +1,14 @@
 const Config = {
-    "ITEM_CONFIG":
-    {
-        "ak47":
-        {
-            "imgName": "Bullet",
+    "ITEM_CONFIG": {
+        "ak47": {
+            "imgName": "bullet",
             "size": 0.89,
             "split": 1,
             "delayHold": 20,
             "delayFire": 4,
             "speed": 75,
             "friction": 0.93,
-            "dev":
-            {
+            "dev": {
                 "moving": 35,
                 "walking": 20,
                 "staying": 10
@@ -21,17 +18,15 @@ const Config = {
             "weight": 1,
             "class": "Automatic"
         },
-        "m4a1":
-        {
-            "imgName": "Bullet",
+        "m4a1": {
+            "imgName": "bullet",
             "size": 0.85,
             "split": 1,
             "delayHold": 20,
             "delayFire": 4,
             "speed": 70,
             "friction": 0.93,
-            "dev":
-            {
+            "dev": {
                 "moving": 30,
                 "walking": 15,
                 "staying": 7
@@ -41,17 +36,15 @@ const Config = {
             "weight": 1.2,
             "class": "Automatic"
         },
-        "awp":
-        {
-            "imgName": "Bullet",
+        "awp": {
+            "imgName": "bullet",
             "size": 1,
             "split": 1,
             "delayHold": 50,
             "delayFire": 50,
             "speed": 120,
             "friction": 0.93,
-            "dev":
-            {
+            "dev": {
                 "moving": 30,
                 "walking": 10,
                 "staying": 1
@@ -61,17 +54,15 @@ const Config = {
             "weight": 3.7,
             "class": "Sniper"
         },
-        "paint":
-        {
-            "imgName": "Paint-bullet",
+        "paint": {
+            "imgName": "paint-bullet",
             "size": 1.7,
             "split": 1,
             "delayHold": 20,
             "delayFire": 10,
             "speed": 100,
             "friction": 0.87,
-            "dev":
-            {
+            "dev": {
                 "moving": 30,
                 "walking": 20,
                 "staying": 15
@@ -81,17 +72,15 @@ const Config = {
             "weight": 2,
             "class": "Automatic"
         },
-        "shotgun":
-        {
-            "imgName": "Bullet",
+        "shotgun": {
+            "imgName": "bullet",
             "size": 0.35,
             "split": 6,
             "delayHold": 20,
             "delayFire": 18,
             "speed": 120,
             "friction": 0.85,
-            "dev":
-            {
+            "dev": {
                 "moving": 25,
                 "walking": 20,
                 "staying": 15
@@ -101,17 +90,15 @@ const Config = {
             "weight": 2.2,
             "class": "Shotgun"
         },
-        "chicken":
-        {
-            "imgName": "Egg",
+        "chicken": {
+            "imgName": "egg",
             "size": 1,
             "split": 1,
             "delayHold": 30,
             "delayFire": 7,
             "speed": 120,
             "friction": 0.8,
-            "dev":
-            {
+            "dev": {
                 "moving": 30,
                 "walking": 25,
                 "staying": 20
@@ -121,17 +108,15 @@ const Config = {
             "weight": 1.5,
             "class": "Automatic"
         },
-        "gatlin":
-        {
-            "imgName": "Bullet",
+        "gatlin": {
+            "imgName": "bullet",
             "size": 0.8,
             "split": 1,
             "delayHold": 80,
             "delayFire": 3,
             "speed": 100,
             "friction": 0.91,
-            "dev":
-            {
+            "dev": {
                 "moving": 45,
                 "walking": 30,
                 "staying": 20
@@ -141,17 +126,15 @@ const Config = {
             "weight": 4,
             "class": "Automatic"
         },
-        "rpk":
-        {
-            "imgName": "Bullet",
+        "rpk": {
+            "imgName": "bullet",
             "size": 0.85,
             "split": 1,
             "delayHold": 30,
             "delayFire": 4,
             "speed": 120,
             "friction": 0.92,
-            "dev":
-            {
+            "dev": {
                 "moving": 36,
                 "walking": 30,
                 "staying": 25
@@ -161,17 +144,15 @@ const Config = {
             "weight": 2.3,
             "class": "Automatic"
         },
-        "uzi":
-        {
-            "imgName": "Smg-bullet",
+        "uzi": {
+            "imgName": "smg-bullet",
             "size": 0.6,
             "split": 1,
             "delayHold": 20,
             "delayFire": 2,
             "speed": 80,
             "friction": 0.89,
-            "dev":
-            {
+            "dev": {
                 "moving": 25,
                 "walking": 20,
                 "staying": 15
@@ -181,17 +162,15 @@ const Config = {
             "weight": 0.5,
             "class": "Automatic"
         },
-        "revolver":
-        {
-            "imgName": "Bullet",
+        "revolver": {
+            "imgName": "bullet",
             "size": 0.9,
             "split": 1,
             "delayHold": 30,
             "delayFire": 17,
             "speed": 130,
             "friction": 0.89,
-            "dev":
-            {
+            "dev": {
                 "moving": 20,
                 "walking": 15,
                 "staying": 10
@@ -201,17 +180,15 @@ const Config = {
             "weight": 0,
             "class": "Pistol"
         },
-        "p90":
-        {
-            "imgName": "Smg-bullet",
+        "p90": {
+            "imgName": "smg-bullet",
             "size": 0.6,
             "split": 1,
             "delayHold": 25,
             "delayFire": 3,
             "speed": 90,
             "friction": 0.89,
-            "dev":
-            {
+            "dev": {
                 "moving": 21,
                 "walking": 18,
                 "staying": 12
@@ -221,17 +198,15 @@ const Config = {
             "weight": 1,
             "class": "Automatic"
         },
-        "rpg":
-        {
-            "imgName": "Rocket",
+        "rpg": {
+            "imgName": "rocket",
             "size": 1,
             "split": 1,
             "delayHold": 50,
             "delayFire": 35,
             "speed": 70,
             "friction": 0.97,
-            "dev":
-            {
+            "dev": {
                 "moving": 15,
                 "walking": 10,
                 "staying": 5
@@ -241,9 +216,8 @@ const Config = {
             "weight": 3,
             "class": "rocket"
         },
-        "rpg_split":
-        {
-            "imgName": "Bullet",
+        "rpg_split": {
+            "imgName": "bullet",
             "size": 0.7,
             "split": 2,
             "speed": 130,
@@ -253,59 +227,58 @@ const Config = {
     },
 
 
-    "REAL_SIZE":
-    {
+    "REAL_SIZE": {
         "Rock": 200,
         "Tree": 190,
-        "Bullet": 10,
-        "Egg": 22,
-        "Paint-bullet": 22,
-        "Smg-bullet": 10,
-        "Rocket": 28,
+        "bullet": 10,
+        "egg": 22,
+        "paint-bullet": 22,
+        "smg-bullet": 10,
+        "rocket": 28,
         "Gunner": 80,
-        "Box_emty":
-        {
+        "Box_emty": {
             "width": 144,
             "height": 143
         },
-        "Box_wooden":
-        {
+        "Box_wooden": {
             "width": 144,
             "height": 143
         },
-        "Roof_brown":
-        {
+        "Roof_brown": {
             "width": 833,
             "height": 434
         }
     },
 
 
-    "MINUS_SIZE":
-    {
+    "MINUS_SIZE": {
         "Rock": 30,
         "Tree": 120,
-        "Bullet": 2,
-        "Egg": 2,
-        "Paint-bullet": 2,
-        "Smg-bullet": 2,
-        "Rocket": 2,
+        "bullet": 2,
+        "egg": 2,
+        "paint-bullet": 2,
+        "smg-bullet": 2,
+        "rocket": 2,
         "Gunner": 10,
-        "Box_emty":
-        {
+        "Box_emty": {
             "width": 10,
             "height": 10
         },
-        "Box_wooden":
-        {
+        "Box_wooden": {
             "width": 10,
             "height": 10
         },
-        "Roof_brown":
-        {
+        "Roof_brown": {
             "width": 20,
             "height": 20
         }
+    },
+
+    "KEY_CONFIG": {
+        "up": "w",
+        "down": "s",
+        "left": "a",
+        "right": "d"
     }
 }
 

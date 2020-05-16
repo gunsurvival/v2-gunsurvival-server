@@ -1,27 +1,27 @@
 import { Config, Collides } from "./utils.js";
-const { REAL_SIZE, MINUS_SIZE, ITEM_CONFIG } = Config;
+const { REAL_SIZE, MINUS_SIZE, ITEM_CONFIG, KEY_CONFIG } = Config;
 
 class Sprite {
-    constructor({ id, type, name, pos, defaultRange, getQueryRange, getBoundary, room, size = 1, degree = 0 } = {}) {
+    constructor({ id, type, name, pos, defaultRange, getQueryRange, getBoundary, size = 1, degree = 0 } = {}) {
         this.id = id;
         this.type = type;
         this.name = name;
         this.pos = { ...pos };
         this.degree = degree;
         this.size = size;
-        this.defaultRange = defaultRange;
+        this.defaultRange = defaultRange; // range at size: 1
 
         this.boundary;
         this.getQueryRange = getQueryRange || function() {
             return this.defaultRange * this.size;
         }
 
-        this.getBoundary = getBoundary;
+        if (getBoundary)
+            this.getBoundary = getBoundary;
         this.frameCount = 0;
-        this.room = room;
     }
 
-    update() {
+    update(room) {
         this.frameCount++;
     }
 
@@ -68,7 +68,6 @@ class Human extends Player {
         super(config);
         let { bag } = config;
         this.bag = bag;
-        this._bag = bag;
         this.blood = 100;
         this.killerID = "";
         this.holdingCoolDown = 0;
@@ -87,12 +86,12 @@ class Human extends Player {
     getMovingSpeed() {
         let speed = 7;
         let holdingGun = this.bag.arr[this.bag.index];
-        speed -= ITEM_CONFIG[holdingGun.name].weight;
+        speed -= holdingGun.weight;
 
         if (this.mouseDown["left"]) // do somthing with mouse left button
             speed--;
 
-        if (this.keyDown["shift"]) // crouching
+        if (this.keyDown["shift"]) // walking
             speed *= 5 / 10;
 
         if (speed <= 1)
@@ -101,8 +100,8 @@ class Human extends Player {
         return speed; //normal
     }
 
-    update() {
-        super.update();
+    update(room) {
+        super.update(room);
         this.status.hideInTree = false;
         this.status.moving = false;
 
@@ -111,8 +110,9 @@ class Human extends Player {
             y: 0
         }
         let movingSpeed = this.getMovingSpeed();
-        for (let direction of this.directions) {
-            if (this.keyDown[direction]) {
+        for (let direction of this.directions) { // check all valid direction
+            let key = KEY_CONFIG[direction]; // get key in keyboard config
+            if (this.keyDown[key]) { // if that key is press-down
                 this.status.moving = true;
                 switch (direction) {
                     case "up":
@@ -140,6 +140,9 @@ class Human extends Player {
         this.pos.y += movingVector.y;
         // end of update position
 
+        let item = this.bag.arr[this.bag.index];
+        item.update(room);
+
         // if ()
     }
 
@@ -152,7 +155,7 @@ class Human extends Player {
                 let damage = 100 * (bulletSpeed / defaultSpeed) * (object.getQueryRange() / defaultRange); // damage chia 2 vi eo hieu sao no bi dinh dan 2 lan :(
                 this.blood -= Math.round(damage);
                 if (this.blood < 0)
-                    this.killerID = object.owner.id;
+                    this.killerID = object.ownerID;
 
                 object.speed.x *= 0.3; // giam speed dan sau khi tinh dame
                 object.speed.y *= 0.3;
@@ -202,15 +205,14 @@ class Bullet extends Sprite {
     constructor(config) {
         config.type = "Bullet";
         super(config);
-        let { owner, speed, friction, imgName = "bullet" } = config;
-        this.owner = owner; // contain Human data not ID
+        let { speed, friction, imgName = "bullet" } = config;
         this.speed = speed;
         this.friction = friction;
         this.imgName = imgName;
     }
 
     getBoundary() {
-        let bRadius = REAL_SIZE[ITEM_CONFIG[this.name].imgName] * ITEM_CONFIG[this.name].size - MINUS_SIZE[ITEM_CONFIG[this.name].imgName];
+        let bRadius = REAL_SIZE[this.imgName] * this.size - MINUS_SIZE[this.imgName];
         let px = this.pos.x - this.speed.x; // previous position
         let py = this.pos.y - this.speed.y;
         let cx = this.pos.x; // current position
@@ -274,7 +276,7 @@ class Bullet extends Sprite {
                         y: this.pos.y - object.pos.y
                     }
                     let magNewVector = Math.sqrt(Math.pow(vectorRockMe.x, 2) + Math.pow(vectorRockMe.y, 2));
-                    let bulletSpeed = Math.sqrt(Math.pow(this.pos.x, 2) + Math.pow(this.pos.y, 2));
+                    let bulletSpeed = Math.sqrt(Math.pow(this.speed.x, 2) + Math.pow(this.speed.y, 2));
                     let scale = bulletSpeed / magNewVector;
                     let bounceFriction = .7;
                     this.speed.x = vectorRockMe.x * scale * bounceFriction;
@@ -298,12 +300,14 @@ class Bullet extends Sprite {
         }
     }
 
-    update() {
-        super.update();
+    update(room) {
+        super.update(room);
         if (this.delete)
             return;
         this.pos.x += this.speed.x;
         this.pos.y += this.speed.y;
+        this.speed.x *= this.friction;
+        this.speed.y *= this.friction;
     }
 }
 
