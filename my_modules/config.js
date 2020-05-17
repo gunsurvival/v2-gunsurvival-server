@@ -2,14 +2,14 @@ const Config = {
     "ITEM_CONFIG": {
         "ak47": {
             "imgName": "bullet",
-            "size": 0.89,
+            "size": 0.4,
             "split": 1,
             "delayHold": 20,
             "delayFire": 4,
             "speed": 75,
             "friction": 0.93,
             "dev": {
-                "moving": 35,
+                "running": 35,
                 "walking": 20,
                 "staying": 10
             },
@@ -27,7 +27,7 @@ const Config = {
             "speed": 70,
             "friction": 0.93,
             "dev": {
-                "moving": 30,
+                "running": 30,
                 "walking": 15,
                 "staying": 7
             },
@@ -45,7 +45,7 @@ const Config = {
             "speed": 120,
             "friction": 0.93,
             "dev": {
-                "moving": 30,
+                "running": 30,
                 "walking": 10,
                 "staying": 1
             },
@@ -63,7 +63,7 @@ const Config = {
             "speed": 100,
             "friction": 0.87,
             "dev": {
-                "moving": 30,
+                "running": 30,
                 "walking": 20,
                 "staying": 15
             },
@@ -81,7 +81,7 @@ const Config = {
             "speed": 120,
             "friction": 0.85,
             "dev": {
-                "moving": 25,
+                "running": 25,
                 "walking": 20,
                 "staying": 15
             },
@@ -99,7 +99,7 @@ const Config = {
             "speed": 120,
             "friction": 0.8,
             "dev": {
-                "moving": 30,
+                "running": 30,
                 "walking": 25,
                 "staying": 20
             },
@@ -117,7 +117,7 @@ const Config = {
             "speed": 100,
             "friction": 0.91,
             "dev": {
-                "moving": 45,
+                "running": 45,
                 "walking": 30,
                 "staying": 20
             },
@@ -135,7 +135,7 @@ const Config = {
             "speed": 120,
             "friction": 0.92,
             "dev": {
-                "moving": 36,
+                "running": 36,
                 "walking": 30,
                 "staying": 25
             },
@@ -153,7 +153,7 @@ const Config = {
             "speed": 80,
             "friction": 0.89,
             "dev": {
-                "moving": 25,
+                "running": 25,
                 "walking": 20,
                 "staying": 15
             },
@@ -171,7 +171,7 @@ const Config = {
             "speed": 130,
             "friction": 0.89,
             "dev": {
-                "moving": 20,
+                "running": 20,
                 "walking": 15,
                 "staying": 10
             },
@@ -189,7 +189,7 @@ const Config = {
             "speed": 90,
             "friction": 0.89,
             "dev": {
-                "moving": 21,
+                "running": 21,
                 "walking": 18,
                 "staying": 12
             },
@@ -207,7 +207,7 @@ const Config = {
             "speed": 70,
             "friction": 0.97,
             "dev": {
-                "moving": 15,
+                "running": 15,
                 "walking": 10,
                 "staying": 5
             },

@@ -89,7 +89,7 @@ class Automatic extends Gun {
             let sx = Math.cos(radianSpeed); // nx means noised position x
             let sy = Math.sin(radianSpeed);
             let magSpeed = Math.sqrt(Math.pow(sx, 2) + Math.pow(sy, 2));
-            let scaleSpeed = random.int(speed - 20, speed + 20) / magSpeed; // scale cho cái speed = bulletconfig>speed
+            let scaleSpeed = speed / magSpeed; // scale cho cái speed = bulletconfig>speed
             let speedVector = { // vector speed đạn 
                 x: sx * scaleSpeed,
                 y: sy * scaleSpeed
@@ -100,7 +100,7 @@ class Automatic extends Gun {
                 type: this.name,
                 name: this.name + Date.now(),
                 pos: startPos,
-                defaultRange: 16,
+                defaultRange: 25,
                 size,
                 ownerID: owner.id,
                 speed: speedVector, //vector bullet go

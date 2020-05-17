@@ -22,7 +22,8 @@ class Mode {
             text,
             maxPlayer,
             playing: [],
-            timeCreate: Date.now()
+            timeCreate: Date.now(),
+            speed: 0
         }
         this.size = {
             width: 1500 + 400 * maxPlayer,
@@ -192,9 +193,31 @@ class Mode {
     }
 
     start() {
+        let delay = 0, stackDelay = 0;
         this.interval = setInterval(() => {
-            this.gameLoop();
-            this.sendUpdates();
+            let timeStart = Date.now();
+
+            if (delay <= 0) { // not delaying the room
+                this.gameLoop();
+                this.sendUpdates();
+
+                // counting the proccesing speed
+                this.setting.speed = Date.now() - timeStart;
+                if (this.setting.speed / 30 > 1) { // room is not stable, lagging
+                    delay = this.setting.speed / 30; // add delay to stabilize the room
+                    stackDelay += delay;
+                    if (stackDelay > 100) { // now the room is commit "not stable, need to do something"
+                        this.io.to(this.setting.id).emit("dialog alert", "Phòng quá tải!");
+                        this.destroy(); 
+                    }
+                } else {
+                    if (stackDelay > 0)
+                        stackDelay -= 0.5;
+                }
+            } else { // is delaying, room is not stable
+                delay--;
+            }
+
         }, 30);
     }
 
@@ -258,8 +281,12 @@ class Mode {
                     this.deleteObject(groupName, object.id);
                     continue;
                 }
-                object.update(this); // doc dong tren
-                this.activeQtree.insert(new _QuadTree.Point(object.pos.x, object.pos.y, object));
+                object.update(this);
+                this.activeQtree.insert(new _QuadTree.Point(object.pos.x, object.pos.y, {
+                    shallow: JSON.parse(JSON.stringify(object)),
+                    origin: object
+                }));
+
                 if (biggestDiameterRange < object.getQueryRange())
                     biggestDiameterRange = object.getQueryRange();
             }
@@ -299,14 +326,28 @@ class Mode {
                 });
 
                 this.io.to(this.setting.id).emit("toast alert", `${socket.name} đã vào phòng!`);
-                socket.join(this.setting.id);
-                socket.emit("static objects", this.staticObjects)
+                socket.join(this.setting.id, () => {
+                    socket.emit("static objects", this.staticObjects)
 
-                this.addPlayer(socket); // tao player theo mode xong thi add vao activeObjects
-                resolve();
+                    this.addPlayer(socket); // tao player theo mode xong thi add vao activeObjects
+                    resolve();
+                });
             } else {
                 reject("Phòng đã đủ người chơi :))");
             }
+        })
+    }
+
+    disconnect(socket) {
+        return new Promise((resolve, reject) => {
+            let playing = this.setting.playing;
+            playing.splice(playing.indexOf(socket.id), 1); // xóa player trong playing
+            let index = this.activeObjects.gunners.findIndex(e => e.id == socket.gunner.id);
+            this.activeObjects.gunners.splice(index, 1);
+            if (index != -1)
+                resolve();
+            else
+                reject();
         })
     }
 
@@ -335,7 +376,8 @@ class Mode {
     deleteObject(group, id) {
         if (this.activeObjects[group]) {
             let index = this.activeObjects[group].findIndex(e => e.id == id);
-            return this.activeObjects[group].splice(index, 1);
+            this.activeObjects[group].splice(index, 1);
+            return true;
         }
 
         return false;
@@ -363,10 +405,9 @@ class Mode {
 
     destroy() { // xoa room
         clearInterval(this.interval);
-        this.io.to(this.id).emit("room destroy");
-        this.io.sockets.clients(this.id).forEach(function(s) {
-            s.leave(this.id);
-        });
+        this.setting.playing.forEach(id => {
+            this.io.sockets.connected[id].leave(this.setting.id);
+        })
     }
 }
 
@@ -385,7 +426,6 @@ class Creative extends Mode {
                 let staticRange = new _QuadTree.Circle(object.pos.x, object.pos.y, this.biggestStaticDiameterRange + object.getQueryRange() + 1);
                 let staticPoints = this.staticQtree.query(staticRange);
                 for (let point of staticPoints) {
-                    // debugger;
                     let { userData: pointData } = point;
                     if (object.intersect(pointData.getBoundary()))
                         object.collide(pointData);
@@ -395,10 +435,10 @@ class Creative extends Mode {
                 let activePoints = this.activeQtree.query(activeRange);
                 for (let point of activePoints) {
                     let { userData: pointData } = point;
-                    if (pointData.id == object.id)
+                    if (pointData.origin.id == object.id)
                         continue;
-                    if (object.intersect(pointData.getBoundary()))
-                        object.collide(pointData);
+                    if (object.intersect(pointData.origin.getBoundary()))
+                        object.collide(pointData.shallow);
                 }
             }
         }

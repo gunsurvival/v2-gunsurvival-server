@@ -425,35 +425,24 @@ io.on("connection", function(socket) {
     })
 
     socket.on("room leave", () => {
+        io.emit("online", io.engine.clientsCount);
         let room = getRoom(socket);
         if (!room) return;
-        let { setting, map, gunners } = room;
-
-        io.to(setting.id).emit("room leave", socket.id);
-
-        socket.leave(setting.id, () => {
-            delete roomIDJoined[socket.id];
-
-            let indexWorker = workers.findIndex(e => e.id == socket.id); // xóa worker và service
-            if (indexWorker != -1) {
-                workers[indexWorker].worker.terminate();
-                workers.splice(indexWorker, 1);
+        let { setting } = room;
+        room.disconnect(socket).then(() => {
+            if (setting.playing.length <= 0) { // nếu ko có ai trong phòng thì xóa phòng
+                room.destroy();
+                io.emit("room delete", room.setting.id);
+                rooms.splice(rooms.findIndex(e => e.setting.id == room.setting.id), 1);
             }
 
-            setting.playing.splice(setting.playing.indexOf(socket.id), 1); // xóa người chơi
-            if (setting.playing.length <= 0) {
-                clearInterval(room.interval);
-                rooms.splice(rooms.findIndex(e => e.id == setting.id), 1);
-                io.emit("room delete", setting.id);
-                return;
-            }
-
-            let indexGunner = gunners.findIndex(e => e.id == socket.id);
-            let indexMap = map.findIndex(e => e.id == gunners[indexGunner].id);
-            map.splice(indexMap, 1);
-            gunners.splice(indexGunner, 1);
+            delete roomIDJoined[socket.id]; // xóa room id người đó
+            delete socket.gunner; // xóa room id người đó
+            io.to(setting.id).emit("room leave", socket.id);
             io.emit("room update", setting);
-        });
+        }).catch(() => {
+            socket.emit("dialog alert", "bad request!");
+        })
     })
 
     //---------------------------------------------
@@ -463,30 +452,21 @@ io.on("connection", function(socket) {
         io.emit("online", io.engine.clientsCount);
         let room = getRoom(socket);
         if (!room) return;
-        let { setting, map, gunners } = room;
+        let { setting } = room;
+        room.disconnect(socket).then(() => {
+            if (setting.playing.length <= 0) { // nếu ko có ai trong phòng thì xóa phòng
+                room.destroy();
+                io.emit("room delete", setting.id);
+                rooms.splice(rooms.findIndex(e => e.setting.id == setting.id), 1);
+            }
 
-        let indexWorker = workers.findIndex(e => e.id == socket.id);
-        if (indexWorker != -1) {
-            workers[indexWorker].worker.terminate();
-            workers.splice(indexWorker, 1);
-        }
-
-        setting.playing.splice(setting.playing.indexOf(socket.id), 1); // xóa player trong playing
-
-        if (setting.playing.length <= 0) { // nếu ko có ai trong phòng thì xóa phòng
-            clearInterval(room.interval);
-            rooms.splice(rooms.findIndex(e => e.id == setting.id), 1);
-            io.emit("room delete", setting.id);
-            return;
-        }
-
-        let indexGunner = gunners.findIndex(e => e.id == socket.id);
-        let indexMap = map.findIndex(e => e.id == gunners[indexGunner].id);
-        map.splice(indexMap, 1); // xóa đạn của người thoát phòng
-        gunners.splice(indexGunner, 1); // xóa người đó
-        delete roomIDJoined[socket.id]; // xóa room id người đó
-        io.to(setting.id).emit("room leave", socket.id);
-        io.emit("room update", setting);
+            delete roomIDJoined[socket.id]; // xóa room id người đó
+            delete socket.gunner; // xóa room id người đó
+            io.to(setting.id).emit("room leave", socket.id);
+            io.emit("room update", setting);
+        }).catch(() => {
+            socket.emit("dialog alert", "bad request!");
+        })
     })
 
     socket.on("gunner degree", (degree) => {

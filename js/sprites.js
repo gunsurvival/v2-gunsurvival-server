@@ -27,14 +27,7 @@ class Sprite {
 
     intersect(otherBoundary) {
         let myBoundary = this.getBoundary();
-        let collideFunc1 = Collides[`collide${myBoundary.type}${otherBoundary.type}`];
-        let collideFunc2 = Collides[`collide${otherBoundary.type}${myBoundary.type}`];
-
-        if (collideFunc1) {
-            return collideFunc1(...myBoundary.data, ...otherBoundary.data);
-        } else {
-            return collideFunc2(...otherBoundary.data, ...myBoundary.data)
-        }
+        return Collides.collideAll(myBoundary, otherBoundary);
     }
 }
 
@@ -149,16 +142,15 @@ class Human extends Player {
     collide(object) {
         switch (object.type) {
             case "Bullet":
-                let bulletSpeed = Math.sqrt(Math.pow(object.speed.x, 2) + Math.pow(object.speed.y, 2)) // bullet speed
-                let defaultSpeed = 120 // bullet default speed to kill someone
-                let defaultRange = 16;
-                let damage = 100 * (bulletSpeed / defaultSpeed) * (object.getQueryRange() / defaultRange); // damage chia 2 vi eo hieu sao no bi dinh dan 2 lan :(
-                this.blood -= Math.round(damage);
-                if (this.blood < 0)
-                    this.killerID = object.ownerID;
-
-                object.speed.x *= 0.3; // giam speed dan sau khi tinh dame
-                object.speed.y *= 0.3;
+                if (this.id != object.ownerID) {
+                    let bulletSpeed = Math.sqrt(Math.pow(object.speed.x, 2) + Math.pow(object.speed.y, 2)) // bullet speed
+                    let defaultSpeed = 120 // bullet default speed to kill someone
+                    let defaultRange = 16;
+                    let damage = 100 * (bulletSpeed / defaultSpeed) * (object.getQueryRange() / defaultRange); // damage chia 2 vi eo hieu sao no bi dinh dan 2 lan :(
+                    this.blood -= Math.round(damage);
+                    if (this.blood < 0)
+                        this.killerID = object.ownerID;
+                }
                 break;
             case "Tree":
                 this.status.hideInTree = true;
@@ -170,7 +162,7 @@ class Human extends Player {
                     y: this.pos.y - object.pos.y
                 }
                 let mag = Math.sqrt(Math.pow(vectorRockMe.x, 2) + Math.pow(vectorRockMe.y, 2));
-                let newMag = (object.getQueryRange() + this.getQueryRange()) / 2;
+                let newMag = (object.defaultRange * object.size + this.getQueryRange()) / 2;
                 let scaleMag = newMag / mag;
                 this.pos.x = vectorRockMe.x * scaleMag + object.pos.x;
                 this.pos.y = vectorRockMe.y * scaleMag + object.pos.y
@@ -205,7 +197,8 @@ class Bullet extends Sprite {
     constructor(config) {
         config.type = "Bullet";
         super(config);
-        let { speed, friction, imgName = "bullet" } = config;
+        let { ownerID, speed, friction, imgName = "bullet" } = config;
+        this.ownerID = ownerID;
         this.speed = speed;
         this.friction = friction;
         this.imgName = imgName;
@@ -253,13 +246,16 @@ class Bullet extends Sprite {
     collide(object) {
         switch (object.type) {
             case "Human":
-                // ben human co xu li roi
+                if (object.id != this.ownerID) { // neu nguoi do ko phai la minh
+                    this.speed.x *= 0.5; // giam speed dan sau khi tinh dame
+                    this.speed.y *= 0.5;
+                }
                 break;
             case "Bullet":
                 {
                     let newSpeed = {
-                        x: (this.speed.x + object.speed.x) / 2,
-                        y: (this.speed.y + object.speed.y) / 2
+                        x: object.speed.x / 2,
+                        y: object.speed.y / 2
                     }
                     this.speed.x = newSpeed.x;
                     this.speed.y = newSpeed.y;
@@ -308,6 +304,10 @@ class Bullet extends Sprite {
         this.pos.y += this.speed.y;
         this.speed.x *= this.friction;
         this.speed.y *= this.friction;
+
+        if (Math.sqrt(Math.pow(this.speed.x, 2) + Math.pow(this.speed.y, 2)) <= 0.2) {
+            this.delete = true;
+        }
     }
 }
 
