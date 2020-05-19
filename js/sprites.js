@@ -1,12 +1,15 @@
 import { Config, Collides } from "./utils.js";
 const { REAL_SIZE, MINUS_SIZE, ITEM_CONFIG, KEY_CONFIG } = Config;
+const random = require("random");
 
 class Sprite {
-    constructor({ id, type, name, pos, defaultRange, getQueryRange, getBoundary, size = 1, degree = 0 } = {}) {
+    // getQueryRange ko can truyen cung duoc
+    constructor({ id, type, name, pos, defaultRange, getQueryRange, getBoundary, speed = { x: 0, y: 0 }, size = 1, degree = 0 } = {}) {
         this.id = id;
         this.type = type;
         this.name = name;
         this.pos = { ...pos };
+        this.speed = { ...speed }
         this.degree = degree;
         this.size = size;
         this.defaultRange = defaultRange; // range at size: 1
@@ -19,6 +22,13 @@ class Sprite {
         if (getBoundary)
             this.getBoundary = getBoundary;
         this.frameCount = 0;
+    }
+
+    getBoundary() {
+        return {
+            type: "Circle",
+            data: [this.pos.x, this.pos.y, this.getQueryRange()]
+        }
     }
 
     update(room) {
@@ -59,7 +69,7 @@ class Human extends Player {
     constructor(config) {
         config.type = "Human";
         super(config);
-        let { bag } = config;
+        let { bag, defaultRange } = config;
         this.bag = bag;
         this.blood = 100;
         this.killerID = "";
@@ -67,13 +77,6 @@ class Human extends Player {
         this.status = {};
 
         this.directions = ["up", "down", "left", "right"];
-    }
-
-    getBoundary() {
-        return {
-            type: "Circle",
-            data: [this.pos.x, this.pos.y, 80 * this.size]
-        }
     }
 
     getMovingSpeed() {
@@ -90,11 +93,16 @@ class Human extends Player {
         if (speed <= 1)
             speed = 1;
 
-        return speed; //normal
+        return speed / this.size; //normal
     }
 
     update(room) {
         super.update(room);
+        this.size = this.blood / 100;
+        if (this.size > 2)
+            this.size = 2;
+        if (this.size < 0.5)
+            this.size = 0.5;
         this.status.hideInTree = false;
         this.status.moving = false;
 
@@ -140,16 +148,16 @@ class Human extends Player {
     }
 
     collide(object) {
-        switch (object.type) {
+        switch (object.origin.type) {
             case "Bullet":
-                if (this.id != object.ownerID) {
-                    let bulletSpeed = Math.sqrt(Math.pow(object.speed.x, 2) + Math.pow(object.speed.y, 2)) // bullet speed
-                    let defaultSpeed = 120 // bullet default speed to kill someone
+                if (this.id != object.origin.ownerID) {
+                    let bulletSpeed = Math.sqrt(Math.pow(object.copy.speed.x, 2) + Math.pow(object.copy.speed.y, 2)) // bullet speed
+                    let defaultSpeed = 200 // bullet default speed to kill someone, reach this, will make 100 damage
                     let defaultRange = 16;
-                    let damage = 100 * (bulletSpeed / defaultSpeed) * (object.getQueryRange() / defaultRange); // damage chia 2 vi eo hieu sao no bi dinh dan 2 lan :(
+                    let damage = 100 * (bulletSpeed / defaultSpeed) * (object.origin.getQueryRange() / 20); // damage chia 2 vi eo hieu sao no bi dinh dan 2 lan :(
                     this.blood -= Math.round(damage);
                     if (this.blood < 0)
-                        this.killerID = object.ownerID;
+                        this.killerID = object.origin.ownerID;
                 }
                 break;
             case "Tree":
@@ -158,22 +166,17 @@ class Human extends Player {
             case "Human":
             case "Rock":
                 let vectorRockMe = {
-                    x: this.pos.x - object.pos.x,
-                    y: this.pos.y - object.pos.y
+                    x: this.pos.x - object.origin.pos.x,
+                    y: this.pos.y - object.origin.pos.y
                 }
                 let mag = Math.sqrt(Math.pow(vectorRockMe.x, 2) + Math.pow(vectorRockMe.y, 2));
-                let newMag = (object.defaultRange * object.size + this.getQueryRange()) / 2;
+                let newMag = (object.origin.getQueryRange() + this.getQueryRange()) / 2;
                 let scaleMag = newMag / mag;
-                this.pos.x = vectorRockMe.x * scaleMag + object.pos.x;
-                this.pos.y = vectorRockMe.y * scaleMag + object.pos.y
+                this.pos.x = vectorRockMe.x * scaleMag + object.origin.pos.x;
+                this.pos.y = vectorRockMe.y * scaleMag + object.origin.pos.y
                 break;
             case "Score":
-                this.blood += object.value;
-                this.size = 80 / this.blood;
-                if (this.size > 3)
-                    this.size = 3;
-                if (this.size < 0.5)
-                    this.size = 0.5;
+                this.blood += object.copy.value;
                 break;
         }
     }
@@ -199,7 +202,6 @@ class Bullet extends Sprite {
         super(config);
         let { ownerID, speed, friction, imgName = "bullet" } = config;
         this.ownerID = ownerID;
-        this.speed = speed;
         this.friction = friction;
         this.imgName = imgName;
     }
@@ -244,18 +246,19 @@ class Bullet extends Sprite {
     }
 
     collide(object) {
-        switch (object.type) {
+        switch (object.origin.type) {
             case "Human":
-                if (object.id != this.ownerID) { // neu nguoi do ko phai la minh
-                    this.speed.x *= 0.5; // giam speed dan sau khi tinh dame
-                    this.speed.y *= 0.5;
+                if (object.origin.id != this.ownerID) { // neu nguoi do ko phai la minh
+                    this.speed.x *= 0.4; // giam speed dan sau khi tinh dame
+                    this.speed.y *= 0.4;
                 }
                 break;
             case "Bullet":
+            case "Score":
                 {
                     let newSpeed = {
-                        x: object.speed.x / 2,
-                        y: object.speed.y / 2
+                        x: object.copy.speed.x / 100 * 80,
+                        y: object.copy.speed.y / 100 * 80
                     }
                     this.speed.x = newSpeed.x;
                     this.speed.y = newSpeed.y;
@@ -268,8 +271,8 @@ class Bullet extends Sprite {
             case "Rock":
                 {
                     let vectorRockMe = {
-                        x: this.pos.x - object.pos.x,
-                        y: this.pos.y - object.pos.y
+                        x: this.pos.x - object.origin.pos.x,
+                        y: this.pos.y - object.origin.pos.y
                     }
                     let magNewVector = Math.sqrt(Math.pow(vectorRockMe.x, 2) + Math.pow(vectorRockMe.y, 2));
                     let bulletSpeed = Math.sqrt(Math.pow(this.speed.x, 2) + Math.pow(this.speed.y, 2));
@@ -277,20 +280,6 @@ class Bullet extends Sprite {
                     let bounceFriction = .7;
                     this.speed.x = vectorRockMe.x * scale * bounceFriction;
                     this.speed.y = vectorRockMe.y * scale * bounceFriction;
-                    break;
-                }
-            case "Score":
-                {
-                    let vectorScoreMe = {
-                        x: this.pos.x - object.pos.x,
-                        y: this.pos.y - object.pos.y
-                    }
-                    let magNewVector = Math.sqrt(Math.pow(vectorScoreMe.x, 2) + Math.pow(vectorScoreMe.y, 2));
-                    let bulletSpeed = Math.sqrt(Math.pow(this.pos.x, 2) + Math.pow(this.pos.y, 2));
-                    let scale = bulletSpeed / magNewVector;
-                    let bounceFriction = .6;
-                    this.speed.x = vectorScoreMe.x * scale * bounceFriction;
-                    this.speed.y = vectorScoreMe.y * scale * bounceFriction;
                     break;
                 }
         }
@@ -311,9 +300,64 @@ class Bullet extends Sprite {
     }
 }
 
+class Score extends Sprite {
+    constructor(config) {
+        super(config);
+        let { value } = config;
+        this.value = value;
+        this.type = "Score";
+        this.size = this.value / 10;
+    }
+
+    update() {
+        this.size = this.value / 10;
+        let speed = 2;
+        this.speed.x += random.float(-speed, speed);
+        this.speed.y += random.float(-speed, speed);
+        this.pos.x += this.speed.x;
+        this.pos.y += this.speed.y;
+        this.speed.x *= 0.9;
+        this.speed.y *= 0.9;
+    }
+
+    collide(object) {
+        switch (object.origin.type) {
+            case "Rock":
+                {
+                    let vectorRockMe = {
+                        x: this.pos.x - object.origin.pos.x,
+                        y: this.pos.y - object.origin.pos.y
+                    }
+                    let magNewVector = Math.sqrt(Math.pow(vectorRockMe.x, 2) + Math.pow(vectorRockMe.y, 2));
+                    let bulletSpeed = Math.sqrt(Math.pow(this.speed.x, 2) + Math.pow(this.speed.y, 2));
+                    let scale = bulletSpeed / magNewVector;
+                    let bounceFriction = .7;
+                    this.speed.x = vectorRockMe.x * scale * bounceFriction;
+                    this.speed.y = vectorRockMe.y * scale * bounceFriction;
+                    break;
+                }
+            case "Human":
+                this.delete = true;
+                break;
+            case "Score":
+            case "Bullet":
+                {
+                    let newSpeed = {
+                        x: object.copy.speed.x / 100 * 80,
+                        y: object.copy.speed.y / 100 * 80
+                    }
+                    this.speed.x = newSpeed.x;
+                    this.speed.y = newSpeed.y;
+                    break;
+                }
+        }
+    }
+}
+
 module.exports = {
     Sprite,
     Bullet,
     Human,
-    Terrorist
+    Terrorist,
+    Score
 }

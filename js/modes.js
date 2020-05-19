@@ -1,4 +1,4 @@
-import { Config, Sprites, Weapons, _QuadTree } from "./utils.js";
+import { Config, Sprites, Weapons, _QuadTree, Shuffle } from "./utils.js";
 const { REAL_SIZE, MINUS_SIZE, ITEM_CONFIG } = Config;
 const random = require("random");
 
@@ -121,7 +121,8 @@ class Mode {
                                 bag,
                                 degree,
                                 blood,
-                                status
+                                status,
+                                size
                             } = object;
 
                             publicData = {
@@ -130,7 +131,9 @@ class Mode {
                                 pos,
                                 bag,
                                 degree,
-                                dead: blood <= 0
+                                dead: blood <= 0,
+                                blood,
+                                size
                             };
 
                             // publicData = {
@@ -175,13 +178,13 @@ class Mode {
                             let {
                                 id,
                                 pos,
-                                size
+                                value
                             } = object;
 
                             publicData = {
                                 id,
                                 pos,
-                                size
+                                value
                             }
                             break;
                         }
@@ -193,7 +196,8 @@ class Mode {
     }
 
     start() {
-        let delay = 0, stackDelay = 0;
+        let delay = 0,
+            stackDelay = 0;
         this.interval = setInterval(() => {
             let timeStart = Date.now();
 
@@ -208,7 +212,7 @@ class Mode {
                     stackDelay += delay;
                     if (stackDelay > 100) { // now the room is commit "not stable, need to do something"
                         this.io.to(this.setting.id).emit("dialog alert", "Phòng quá tải!");
-                        this.destroy(); 
+                        this.destroy();
                     }
                 } else {
                     if (stackDelay > 0)
@@ -219,6 +223,37 @@ class Mode {
             }
 
         }, 30);
+    }
+
+    gameLoop() {
+        let biggestActiveDiameterRange = this._createActiveQtree(); // khac voi ham createStaticQtree(), ham nay co object.update()
+        for (let groupName in this.activeObjects) {
+            let group = this.activeObjects[groupName];
+            for (let object of group) {
+                let staticRange = new _QuadTree.Circle(object.pos.x, object.pos.y, this.biggestStaticDiameterRange + object.getQueryRange() + 1);
+                let staticPoints = this.staticQtree.query(staticRange);
+                for (let point of staticPoints) {
+                    let { userData: pointData } = point;
+                    if (object.intersect(pointData.getBoundary())) {
+                        object.collide({
+                            copy: {},
+                            origin: pointData
+                        });
+                    }
+                }
+
+                let activeRange = new _QuadTree.Circle(object.pos.x, object.pos.y, biggestActiveDiameterRange + object.getQueryRange() + 1);
+                let activePoints = this.activeQtree.query(activeRange);
+                for (let point of activePoints) {
+                    let { userData: pointData } = point;
+                    if (pointData.origin.id == object.id)
+                        continue;
+                    if (object.intersect(pointData.origin.getBoundary())) {
+                        object.collide(pointData);
+                    }
+                }
+            }
+        }
     }
 
     createMap(mode) {
@@ -236,13 +271,7 @@ class Mode {
                         defaultRange: 180,
                         degree: 0,
                         type: ["Rock", "Tree"][random.int(0, 1)],
-                        id: i,
-                        getBoundary: function() {
-                            return {
-                                type: "Circle",
-                                data: [this.pos.x, this.pos.y, this.getQueryRange()]
-                            }
-                        }
+                        id: i
                     }));
                     let newRange = this.staticObjects.map[this.staticObjects.map.length - 1].getQueryRange();
                     if (this.biggestStaticDiameterRange < newRange)
@@ -283,7 +312,7 @@ class Mode {
                 }
                 object.update(this);
                 this.activeQtree.insert(new _QuadTree.Point(object.pos.x, object.pos.y, {
-                    shallow: JSON.parse(JSON.stringify(object)),
+                    copy: JSON.parse(JSON.stringify(object)),
                     origin: object
                 }));
 
@@ -298,6 +327,7 @@ class Mode {
         return new Promise((resolve, reject) => {
             if (this.setting.playing.length < this.setting.maxPlayer) {
                 let guns = [];
+                // Shuffle(this.allWeapons);
                 for (let i = 0; i < 2; i++) {
                     if (i > this.allWeapons.length - 1)
                         break;
@@ -316,13 +346,7 @@ class Mode {
                         arr: guns,
                         index: 0
                     },
-                    defaultRange: 80,
-                    getBoundary: function() {
-                        return {
-                            type: "Circle",
-                            data: [this.pos.x, this.pos.y, this.getQueryRange()]
-                        }
-                    }
+                    defaultRange: 80
                 });
 
                 this.io.to(this.setting.id).emit("toast alert", `${socket.name} đã vào phòng!`);
@@ -357,7 +381,7 @@ class Mode {
     }
 
     addChat(text, socket) {
-        if (text.length > 50 && Date.now() - socket.lastChat < 1000)
+        if (text.length == 0 || text.length > 50 || Date.now() - socket.lastChat < 1000)
             return;
 
         this.io.to(this.setting.id).emit("room chat", {
@@ -417,32 +441,6 @@ class Creative extends Mode {
         this.setting.mode = "creative";
         this.createMap("random");
     }
-
-    gameLoop() {
-        let biggestActiveDiameterRange = this._createActiveQtree(); // khac voi ham createStaticQtree(), ham nay co object.update()
-        for (let groupName in this.activeObjects) {
-            let group = this.activeObjects[groupName];
-            for (let object of group) {
-                let staticRange = new _QuadTree.Circle(object.pos.x, object.pos.y, this.biggestStaticDiameterRange + object.getQueryRange() + 1);
-                let staticPoints = this.staticQtree.query(staticRange);
-                for (let point of staticPoints) {
-                    let { userData: pointData } = point;
-                    if (object.intersect(pointData.getBoundary()))
-                        object.collide(pointData);
-                }
-
-                let activeRange = new _QuadTree.Circle(object.pos.x, object.pos.y, biggestActiveDiameterRange + object.getQueryRange() + 1);
-                let activePoints = this.activeQtree.query(activeRange);
-                for (let point of activePoints) {
-                    let { userData: pointData } = point;
-                    if (pointData.origin.id == object.id)
-                        continue;
-                    if (object.intersect(pointData.origin.getBoundary()))
-                        object.collide(pointData.shallow);
-                }
-            }
-        }
-    }
 }
 
 class King extends Mode {
@@ -450,6 +448,34 @@ class King extends Mode {
         super(config);
         this.setting.mode = "king";
         this.createMap("random");
+        this.scoreInterval;
+    }
+
+    createScore() {
+        this.addObject("scores", new Sprites.Score({
+            id: Date.now(),
+            name: Date.now() + "score",
+            pos: {
+                x: random.float(-this.size.width / 2, this.size.width / 2).toFixed(1) - 0,
+                y: random.float(-this.size.width / 2, this.size.width / 2).toFixed(1) - 0
+            },
+            defaultRange: 10,
+            value: random.int(5, 40)
+        }));
+    }
+
+    start() {
+        super.start();
+        this.createScore();
+        this.scoreInterval = setInterval(() => {
+            if (this.activeObjects.scores.length < 20)
+                this.createScore();
+        }, 1000);
+    }
+
+    destroy() {
+        clearInterval(this.scoreInterval);
+        super.destroy();
     }
 }
 
