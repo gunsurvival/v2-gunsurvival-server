@@ -52,7 +52,7 @@ const Config = {
             "round": 5,
             "reload": 110,
             "weight": 3.7,
-            "class": "Sniper"
+            "class": "Automatic"
         },
         "paint": {
             "imgName": "paint-bullet",
@@ -88,7 +88,7 @@ const Config = {
             "round": 5,
             "reload": 70,
             "weight": 2.2,
-            "class": "Shotgun"
+            "class": "Automatic"
         },
         "chicken": {
             "imgName": "egg",
@@ -178,7 +178,7 @@ const Config = {
             "round": 8,
             "reload": 40,
             "weight": 0,
-            "class": "Pistol"
+            "class": "Automatic"
         },
         "p90": {
             "imgName": "smg-bullet",
@@ -214,14 +214,6 @@ const Config = {
             "round": 50,
             "reload": 45,
             "weight": 3,
-            "class": "rocket"
-        },
-        "rpg_split": {
-            "imgName": "bullet",
-            "size": 0.7,
-            "split": 2,
-            "speed": 130,
-            "friction": 0.85,
             "class": "Automatic"
         }
     },

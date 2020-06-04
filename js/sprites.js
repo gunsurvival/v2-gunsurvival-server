@@ -1,6 +1,7 @@
 import { Config, Collides } from "./utils.js";
 const { REAL_SIZE, MINUS_SIZE, ITEM_CONFIG, KEY_CONFIG } = Config;
 const random = require("random");
+const axios = require('axios');
 
 class Sprite {
     // getQueryRange ko can truyen cung duoc
@@ -48,64 +49,8 @@ class Player extends Sprite {
         this.mouseDown = {};
     }
 
-    onKeyDown(key) {
-        this.keyDown[key] = true;
-    }
-
-    onKeyUp(key) {
-        this.keyDown[key] = false;
-    }
-
-    onMouseDown(button) {
-        this.mouseDown[button] = true;
-    }
-
-    onMouseUp(button) {
-        this.mouseDown[button] = false;
-    }
-}
-
-class Human extends Player {
-    constructor(config) {
-        config.type = "Human";
-        super(config);
-        let { bag, defaultRange } = config;
-        this.bag = bag;
-        this.blood = 100;
-        this.killerID = "";
-        this.holdingCoolDown = 0;
-        this.status = {};
-
-        this.directions = ["up", "down", "left", "right"];
-    }
-
-    getMovingSpeed() {
-        let speed = 7;
-        let holdingGun = this.bag.arr[this.bag.index];
-        speed -= holdingGun.weight;
-
-        if (this.mouseDown["left"]) // do somthing with mouse left button
-            speed--;
-
-        if (this.keyDown["shift"]) // walking
-            speed *= 5 / 10;
-
-        if (speed <= 1)
-            speed = 1;
-
-        return speed / this.size; //normal
-    }
-
     update(room) {
         super.update(room);
-        this.size = this.blood / 100;
-        if (this.size > 2)
-            this.size = 2;
-        if (this.size < 0.5)
-            this.size = 0.5;
-        this.status.hideInTree = false;
-        this.status.moving = false;
-
         let movingVector = {
             x: 0,
             y: 0
@@ -139,11 +84,75 @@ class Human extends Player {
         movingVector.y *= scale;
         this.pos.x += movingVector.x;
         this.pos.y += movingVector.y;
-        // end of update position
+    }
+
+    onKeyDown(key) {
+        this.keyDown[key] = true;
+    }
+
+    onKeyUp(key) {
+        this.keyDown[key] = false;
+    }
+
+    onMouseDown(button) {
+        this.mouseDown[button] = true;
+    }
+
+    onMouseUp(button) {
+        this.mouseDown[button] = false;
+    }
+}
+
+class Human extends Player {
+    constructor(config) {
+        config.type = "Human";
+        super(config);
+        let { bag, defaultRange } = config;
+        this.bag = bag;
+        this.blood = 100;
+        this.killerID = "";
+        this.holdingCoolDown = 0;
+        this.status = {};
+        this.lastPos = {
+            x: this.pos.x,
+            y: this.pos.y
+        }
+
+        this.directions = ["up", "down", "left", "right"];
+    }
+
+    getMovingSpeed() {
+        let speed = 7;
+        let holdingGun = this.bag.arr[this.bag.index];
+        speed -= holdingGun.weight;
+
+        if (this.mouseDown["left"]) // do somthing with mouse left button
+            speed--;
+
+        if (this.keyDown["shift"]) // walking
+            speed *= 5 / 10;
+
+        if (speed <= 1)
+            speed = 1;
+
+        return speed / this.size; //normal
+    }
+
+    update(room) {
+        this.lastPos.x = this.pos.x;
+        this.lastPos.y = this.pos.y;
+        this.size = this.blood / 100;
+        if (this.size > 2)
+            this.size = 2;
+        if (this.size < 0.5)
+            this.size = 0.5;
+        this.status.hideInTree = false;
+        this.status.moving = false;
+
+        super.update(room); // update position
 
         let item = this.bag.arr[this.bag.index];
         item.update(room);
-
         // if ()
     }
 
@@ -156,8 +165,10 @@ class Human extends Player {
                     let defaultRange = 16;
                     let damage = 100 * (bulletSpeed / defaultSpeed) * (object.origin.getQueryRange() / 20); // damage chia 2 vi eo hieu sao no bi dinh dan 2 lan :(
                     this.blood -= Math.round(damage);
-                    if (this.blood < 0)
+                    if (this.blood < 0) {
+                        this.blood = 0;
                         this.killerID = object.origin.ownerID;
+                    }
                 }
                 break;
             case "Tree":
@@ -193,6 +204,105 @@ class CounterTerrorist extends Human {
     constructor(config) {
         super(config);
         this.img = "counter-terrorist";
+    }
+}
+
+class PandoraBot extends Human {
+    constructor(config) {
+        super(config);
+        this.img = "pandora";
+        this.delayChangeDirection = 0;
+    }
+
+    reply(text, room) {
+        let fakeSocket = {
+            id: this.id,
+            isBot: true
+        }
+        axios({
+            "url": "https://kakko.pandorabots.com/pandora/talk-xml",
+            "data": `input=${text}&botid=9fa364f2fe345a10&custid=9a7bc0f95e4abb96`,
+            "method": "POST",
+            "mode": "no-cors"
+        }).then(res => {
+            let regexString = /\<that\>(.*?)\<\/that\>/.exec(res.data);
+            let responseChat = regexString ? regexString[1] : "...";
+            room.addChat(responseChat, fakeSocket, false);
+        })
+    }
+
+    move(direction) {
+        switch (direction) {
+            case "up":
+                this.onKeyDown('w');
+                break;
+            case "down":
+                this.onKeyDown('s');
+                break;
+            case "left":
+                this.onKeyDown('a');
+                break;
+            case "right":
+                this.onKeyDown('d');
+                break;
+        }
+    }
+
+    unMove(direction) {
+        switch (direction) {
+            case "up":
+                this.onKeyUp('w');
+                break;
+            case "down":
+                this.onKeyUp('s');
+                break;
+            case "left":
+                this.onKeyUp('a');
+                break;
+            case "right":
+                this.onKeyUp('d');
+                break;
+        }
+    }
+
+    update(room) {
+        if (this.delayChangeDirection > 0) {
+            this.delayChangeDirection--;
+        } else {
+            let newDegree = random.int(0, 360);
+            let newSpeed = {
+                x: Math.cos(newDegree * Math.PI / 180),
+                y: Math.sin(newDegree * Math.PI / 180)
+            }
+            let scale = this.getMovingSpeed() / Math.sqrt(Math.pow(newSpeed.x, 2) + Math.pow(newSpeed.y, 2));
+
+            this.degree = newDegree;
+            this.speed = {
+                x: newDegree.x * scale,
+                y: newDegree.y * scale
+            }
+
+            this.delayChangeDirection = 10;
+        }
+
+        super.update(room); // update normal person stuff
+
+        let movingSpeed = this.getMovingSpeed();
+        let movingVector = {
+            x: Math.cos(this.degree * Math.PI / 180),
+            y: Math.sin(this.degree * Math.PI / 180)
+        }
+        let magMovingVector = Math.sqrt(Math.pow(movingVector.x, 2) + Math.pow(movingVector.y, 2));
+        let scale = movingSpeed / magMovingVector;
+        movingVector.x *= scale;
+        movingVector.y *= scale;
+        this.pos.x += movingVector.x;
+        this.pos.y += movingVector.y;
+        // end of update bot position
+
+        let item = this.bag.arr[this.bag.index];
+        item.update(room);
+        // if ()
     }
 }
 
@@ -294,7 +404,7 @@ class Bullet extends Sprite {
         this.speed.x *= this.friction;
         this.speed.y *= this.friction;
 
-        if (Math.sqrt(Math.pow(this.speed.x, 2) + Math.pow(this.speed.y, 2)) <= 0.2) {
+        if (Math.sqrt(Math.pow(this.speed.x, 2) + Math.pow(this.speed.y, 2)) <= 0.1) {
             this.delete = true;
         }
     }
@@ -359,5 +469,6 @@ module.exports = {
     Bullet,
     Human,
     Terrorist,
+    PandoraBot,
     Score
 }

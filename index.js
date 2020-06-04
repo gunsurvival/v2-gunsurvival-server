@@ -35,7 +35,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const xssFilters = require('xss-filters');
 const random = require("random");
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 1234;
 
 //game
 
@@ -51,81 +51,6 @@ let rooms = [];
 let roomIDJoined = {}; // check id room of stranger
 let roomIDTick = 10000;
 let workers = [];
-
-let allWeapons = [
-    {
-        name: "ak47",
-        bulletCount: 30,
-        magazine: 10,
-        isReloading: false
-    },
-    {
-        name: "m4a1",
-        bulletCount: 30,
-        magazine: 10,
-        isReloading: false
-    },
-    {
-        name: "awp",
-        bulletCount: 5,
-        magazine: 10,
-        isReloading: false
-    },
-    {
-        name: "paint",
-        bulletCount: 10,
-        magazine: 10,
-        isReloading: false
-    },
-    {
-        name: "shotgun",
-        bulletCount: 5,
-        magazine: 10,
-        isReloading: false
-    },
-    {
-        name: "chicken",
-        bulletCount: 100,
-        magazine: 0,
-        isReloading: false
-    },
-    {
-        name: "gatlin",
-        bulletCount: 200,
-        magazine: 1,
-        isReloading: false
-    },
-    {
-        name: "rpk",
-        bulletCount: 80,
-        magazine: 2,
-        isReloading: false
-    },
-    {
-        name: "uzi",
-        bulletCount: 25,
-        magazine: 10,
-        isReloading: false
-    },
-    {
-        name: "revolver",
-        bulletCount: 8,
-        magazine: 10,
-        isReloading: false
-    },
-    {
-        name: "p90",
-        bulletCount: 50,
-        magazine: 5,
-        isReloading: false
-    },
-    {
-        name: "rpg",
-        bulletCount: 100,
-        magazine: 0,
-        isReloading: false
-    }
-]
 
 const getRoom = function(socket) {
     let roomID = roomIDJoined[socket.id]; // checking if user do join a room
@@ -378,32 +303,32 @@ io.on("connection", function(socket) {
     socket.on("room respawn", () => {
         let room = getRoom(socket);
         if (!room) return;
-        let { setting, map, gunners } = room;
-        let indexG = gunners.findIndex(e => e.id == socket.id);
-        if (indexG == -1)
-            return;
-        let gunner = gunners[indexG];
-        if (!gunner.dead)
-            return;
-        gunner.dead = false;
-        gunner.blood = 100;
-        gunner.holdingCoolDown = 0;
-        gunner.pos.x = random.int(-WORLDSIZE.width / 2, WORLDSIZE.width / 2);
-        gunner.pos.y = random.int(-WORLDSIZE.height / 2, WORLDSIZE.height / 2);
-        gunner.move.up = false;
-        gunner.move.down = false;
-        gunner.move.left = false;
-        gunner.move.right = false;
-        delete gunner.keydown;
-        gunner.keydown = {};
-        gunner.firing = false;
-        shuffle(allWeapons);
-        clearArray(gunner.bag.arr, 2);
-        gunner.bag.arr = [{ ...allWeapons[0] }, { ...allWeapons[1] }];
-        gunner.bag.index = 0;
-        io.to(socket.id).emit("room respawn private", gunner.bag);
-        io.to(setting.id).emit("room respawn public", socket.id, gunner.bag.arr[gunner.bag.index]);
-        addWorker(socket);
+        // let { setting, map, gunners } = room;
+        // let indexG = gunners.findIndex(e => e.id == socket.id);
+        // if (indexG == -1)
+        //     return;
+        // let gunner = gunners[indexG];
+        // if (!gunner.dead)
+        //     return;
+        // gunner.dead = false;
+        // gunner.blood = 100;
+        // gunner.holdingCoolDown = 0;
+        // gunner.pos.x = random.int(-WORLDSIZE.width / 2, WORLDSIZE.width / 2);
+        // gunner.pos.y = random.int(-WORLDSIZE.height / 2, WORLDSIZE.height / 2);
+        // gunner.move.up = false;
+        // gunner.move.down = false;
+        // gunner.move.left = false;
+        // gunner.move.right = false;
+        // delete gunner.keydown;
+        // gunner.keydown = {};
+        // gunner.firing = false;
+        // shuffle(allWeapons);
+        // clearArray(gunner.bag.arr, 2);
+        // gunner.bag.arr = [{ ...allWeapons[0] }, { ...allWeapons[1] }];
+        // gunner.bag.index = 0;
+        // io.to(socket.id).emit("room respawn private", gunner.bag);
+        // io.to(setting.id).emit("room respawn public", socket.id, gunner.bag.arr[gunner.bag.index]);
+        // addWorker(socket);
     })
 
     socket.on("room join", (joinRoomID) => {

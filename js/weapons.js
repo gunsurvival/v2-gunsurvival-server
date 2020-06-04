@@ -98,7 +98,7 @@ class Automatic extends Gun {
             room.addObject("bullets", new Sprites.Bullet({
                 id: Date.now(),
                 type: this.name,
-                name: this.name + Date.now(),
+                name: this.name,
                 pos: startPos,
                 defaultRange: 25,
                 size,
