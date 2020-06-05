@@ -1,9 +1,9 @@
 {
   "name": "gunsurvival-server",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --exec babel-node index.js",
+    "start": "babel-node index.js",
     "debug": "nodemon --inspect --exec babel-node index.js"
   },
   "author": "MrBean <KB2A TEAM>",
@@ -20,7 +20,11 @@
     "random": "^2.2.0",
     "random-normal": "^1.0.0",
     "socket.io": "^2.3.0",
-    "xss-filters": "^1.2.7"
+    "xss-filters": "^1.2.7",
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.6",
+    "@babel/node": "^7.8.7",
+    "@babel/preset-env": "^7.9.6"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
