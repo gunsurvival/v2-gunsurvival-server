@@ -3,8 +3,9 @@
   "version": "2.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "babel-node index.js",
-    "debug": "nodemon --inspect --exec babel-node index.js"
+    "start": "nodemon --exec babel-node index.js",
+    "debug": "nodemon --inspect --exec babel-node index.js",
+    "heroku": "babel-node index.js"
   },
   "author": "MrBean <KB2A TEAM>",
   "license": "MIT",
