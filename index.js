@@ -35,7 +35,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const xssFilters = require('xss-filters');
 const random = require("random");
-const port = process.env.PORT || 1234;
+const port = process.env.PORT || 3000;
 
 //game
 
@@ -245,7 +245,6 @@ app.post("/mapeditor", function(req, res) {
 });
 
 io.on("connection", function(socket) {
-    console.log("1 player connected, online: " + io.engine.clientsCount);
     io.emit("online", io.engine.clientsCount);
 
     socket.name = socket.id;
@@ -445,8 +444,10 @@ io.on("connection", function(socket) {
         let bag = socket.gunner.bag;
         if (index == bag.index)
             return;
-        if (index <= bag.arr.length - 1 && index >= 0)
+        if (index <= bag.arr.length - 1 && index >= 0) {
             bag.index = index;
+            bag.arr[bag.index].resetDelay();
+        }
 
         io.emit("weapon change", {
             id: socket.id,

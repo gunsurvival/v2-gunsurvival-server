@@ -9,10 +9,10 @@ class Sprite {
         this.id = id;
         this.type = type;
         this.name = name;
+        this.size = size;
+        this.degree = degree;
         this.pos = { ...pos };
         this.speed = { ...speed }
-        this.degree = degree;
-        this.size = size;
         this.defaultRange = defaultRange; // range at size: 1
 
         this.boundary;
@@ -42,175 +42,9 @@ class Sprite {
     }
 }
 
-class Player extends Sprite {
+class Animal extends Sprite {
     constructor(config) {
         super(config);
-        this.keyDown = {};
-        this.mouseDown = {};
-    }
-
-    update(room) {
-        super.update(room);
-        let movingVector = {
-            x: 0,
-            y: 0
-        }
-        let movingSpeed = this.getMovingSpeed();
-        for (let direction of this.directions) { // check all valid direction
-            let key = KEY_CONFIG[direction]; // get key in keyboard config
-            if (this.keyDown[key]) { // if that key is press-down
-                this.status.moving = true;
-                switch (direction) {
-                    case "up":
-                        movingVector.y -= movingSpeed;
-                        break;
-                    case "down":
-                        movingVector.y += movingSpeed;
-                        break;
-                    case "left":
-                        movingVector.x -= movingSpeed;
-                        break;
-                    case "right":
-                        movingVector.x += movingSpeed;
-                        break;
-                }
-            }
-        }
-        let magMovingVector = Math.sqrt(Math.pow(movingVector.x, 2) + Math.pow(movingVector.y, 2));
-        let scale = 1;
-        if (magMovingVector > 0)
-            scale = movingSpeed / magMovingVector;
-        movingVector.x *= scale;
-        movingVector.y *= scale;
-        this.pos.x += movingVector.x;
-        this.pos.y += movingVector.y;
-    }
-
-    onKeyDown(key) {
-        this.keyDown[key] = true;
-    }
-
-    onKeyUp(key) {
-        this.keyDown[key] = false;
-    }
-
-    onMouseDown(button) {
-        this.mouseDown[button] = true;
-    }
-
-    onMouseUp(button) {
-        this.mouseDown[button] = false;
-    }
-}
-
-class Human extends Player {
-    constructor(config) {
-        config.type = "Human";
-        super(config);
-        let { bag, defaultRange } = config;
-        this.bag = bag;
-        this.blood = 100;
-        this.killerID = "";
-        this.holdingCoolDown = 0;
-        this.status = {};
-        this.lastPos = {
-            x: this.pos.x,
-            y: this.pos.y
-        }
-
-        this.directions = ["up", "down", "left", "right"];
-    }
-
-    getMovingSpeed() {
-        let speed = 7;
-        let holdingGun = this.bag.arr[this.bag.index];
-        speed -= holdingGun.weight;
-
-        if (this.mouseDown["left"]) // do somthing with mouse left button
-            speed--;
-
-        if (this.keyDown["shift"]) // walking
-            speed *= 5 / 10;
-
-        if (speed <= 1)
-            speed = 1;
-
-        return speed / this.size; //normal
-    }
-
-    update(room) {
-        this.lastPos.x = this.pos.x;
-        this.lastPos.y = this.pos.y;
-        this.size = this.blood / 100;
-        if (this.size > 2)
-            this.size = 2;
-        if (this.size < 0.5)
-            this.size = 0.5;
-        this.status.hideInTree = false;
-        this.status.moving = false;
-
-        super.update(room); // update position
-
-        let item = this.bag.arr[this.bag.index];
-        item.update(room);
-        // if ()
-    }
-
-    collide(object) {
-        switch (object.origin.type) {
-            case "Bullet":
-                if (this.id != object.origin.ownerID) {
-                    let bulletSpeed = Math.sqrt(Math.pow(object.copy.speed.x, 2) + Math.pow(object.copy.speed.y, 2)) // bullet speed
-                    let defaultSpeed = 200 // bullet default speed to kill someone, reach this, will make 100 damage
-                    let defaultRange = 16;
-                    let damage = 100 * (bulletSpeed / defaultSpeed) * (object.origin.getQueryRange() / 20); // damage chia 2 vi eo hieu sao no bi dinh dan 2 lan :(
-                    this.blood -= Math.round(damage);
-                    if (this.blood < 0) {
-                        this.blood = 0;
-                        this.killerID = object.origin.ownerID;
-                    }
-                }
-                break;
-            case "Tree":
-                this.status.hideInTree = true;
-                break;
-            case "Human":
-            case "Rock":
-                let vectorRockMe = {
-                    x: this.pos.x - object.origin.pos.x,
-                    y: this.pos.y - object.origin.pos.y
-                }
-                let mag = Math.sqrt(Math.pow(vectorRockMe.x, 2) + Math.pow(vectorRockMe.y, 2));
-                let newMag = (object.origin.getQueryRange() + this.getQueryRange()) / 2;
-                let scaleMag = newMag / mag;
-                this.pos.x = vectorRockMe.x * scaleMag + object.origin.pos.x;
-                this.pos.y = vectorRockMe.y * scaleMag + object.origin.pos.y
-                break;
-            case "Score":
-                this.blood += object.copy.value;
-                break;
-        }
-    }
-}
-
-class Terrorist extends Human {
-    constructor(config) {
-        super(config);
-        this.img = "terrorist";
-    }
-}
-
-class CounterTerrorist extends Human {
-    constructor(config) {
-        super(config);
-        this.img = "counter-terrorist";
-    }
-}
-
-class PandoraBot extends Human {
-    constructor(config) {
-        super(config);
-        this.img = "pandora";
         this.delayChangeDirection = 0;
     }
 
@@ -227,42 +61,9 @@ class PandoraBot extends Human {
         }).then(res => {
             let regexString = /\<that\>(.*?)\<\/that\>/.exec(res.data);
             let responseChat = regexString ? regexString[1] : "...";
+            responseChat = responseChat.replace(/([^\s]+)/, "oink");
             room.addChat(responseChat, fakeSocket, false);
         })
-    }
-
-    move(direction) {
-        switch (direction) {
-            case "up":
-                this.onKeyDown('w');
-                break;
-            case "down":
-                this.onKeyDown('s');
-                break;
-            case "left":
-                this.onKeyDown('a');
-                break;
-            case "right":
-                this.onKeyDown('d');
-                break;
-        }
-    }
-
-    unMove(direction) {
-        switch (direction) {
-            case "up":
-                this.onKeyUp('w');
-                break;
-            case "down":
-                this.onKeyUp('s');
-                break;
-            case "left":
-                this.onKeyUp('a');
-                break;
-            case "right":
-                this.onKeyUp('d');
-                break;
-        }
     }
 
     update(room) {
@@ -464,11 +265,272 @@ class Score extends Sprite {
     }
 }
 
+class Player extends Sprite {
+    constructor(config) {
+        super(config);
+        this.keyDown = {};
+        this.mouseDown = {};
+    }
+
+    update(room) {
+        super.update(room);
+
+        let movingVector = {
+            x: 0,
+            y: 0
+        }
+        let movingSpeed = this.getMovingSpeed();
+        for (let direction of this.directions) { // check all valid direction
+            let key = KEY_CONFIG[direction]; // get key in keyboard config
+            if (this.keyDown[key]) { // if that key is press-down
+                this.status.moving = true;
+                switch (direction) {
+                    case "up":
+                        movingVector.y -= movingSpeed;
+                        break;
+                    case "down":
+                        movingVector.y += movingSpeed;
+                        break;
+                    case "left":
+                        movingVector.x -= movingSpeed;
+                        break;
+                    case "right":
+                        movingVector.x += movingSpeed;
+                        break;
+                }
+            }
+        }
+        let magMovingVector = Math.sqrt(Math.pow(movingVector.x, 2) + Math.pow(movingVector.y, 2));
+        let scale = 1;
+        if (magMovingVector > 0)
+            scale = movingSpeed / magMovingVector;
+        movingVector.x *= scale;
+        movingVector.y *= scale;
+        this.pos.x += movingVector.x;
+        this.pos.y += movingVector.y;
+    }
+
+    onKeyDown(key) {
+        this.keyDown[key] = true;
+    }
+
+    onKeyUp(key) {
+        this.keyDown[key] = false;
+    }
+
+    onMouseDown(button) {
+        this.mouseDown[button] = true;
+    }
+
+    onMouseUp(button) {
+        this.mouseDown[button] = false;
+    }
+}
+
+class Human extends Player {
+    constructor(config) {
+        config.type = "Human";
+        super(config);
+        let { bag, defaultRange } = config;
+        this.bag = bag;
+        this.blood = 100;
+        this.killerID = "";
+        this.holdingCoolDown = 0;
+        this.status = {};
+        this.lastPos = {
+            x: this.pos.x,
+            y: this.pos.y
+        }
+
+        this.directions = ["up", "down", "left", "right"];
+    }
+
+    getMovingSpeed() {
+        let speed = 7;
+        let holdingGun = this.bag.arr[this.bag.index];
+        speed -= holdingGun.weight;
+
+        if (this.mouseDown["left"]) // do somthing with mouse left button
+            speed--;
+
+        if (this.keyDown["shift"]) // walking
+            speed *= 5 / 10;
+
+        if (speed <= 1)
+            speed = 1;
+
+        return speed / this.size; //normal
+    }
+
+    isDead() {
+        return this.blood <= 0;
+    }
+
+    update(room) {
+        super.update(room);
+
+        if (this.isDead()) {
+            this.blood = 0;
+            debugger;
+            return;
+        }
+
+        this.lastPos.x = this.pos.x;
+        this.lastPos.y = this.pos.y;
+        this.size = this.blood / 100;
+        if (this.size > 2)
+            this.size = 2;
+        if (this.size < 0.5)
+            this.size = 0.5;
+        this.status.hideInTree = false;
+        this.status.moving = false;
+
+        super.update(room); // update position
+
+        let item = this.bag.arr[this.bag.index];
+        item.update(room);
+        // if ()
+    }
+
+    collide(object) {
+        switch (object.origin.type) {
+            case "Bullet":
+                if (this.id != object.origin.ownerID) {
+                    let bulletSpeed = Math.sqrt(Math.pow(object.copy.speed.x, 2) + Math.pow(object.copy.speed.y, 2)) // bullet speed
+                    let defaultSpeed = 200 // bullet default speed to kill someone, reach this, will make 100 damage
+                    let defaultRange = 16;
+                    let damage = 100 * (bulletSpeed / defaultSpeed) * (object.origin.getQueryRange() / 20); // damage chia 2 vi eo hieu sao no bi dinh dan 2 lan :(
+                    this.blood -= Math.round(damage);
+                    if (this.blood < 0) {
+                        this.blood = 0;
+                        this.killerID = object.origin.ownerID;
+                    }
+                }
+                break;
+            case "Tree":
+                this.status.hideInTree = true;
+                break;
+            case "Human":
+                {
+                    let vectorHimMe = {
+                        x: this.pos.x - object.copy.pos.x,
+                        y: this.pos.y - object.copy.pos.y
+                    }
+                    let mag = Math.sqrt(Math.pow(vectorHimMe.x, 2) + Math.pow(vectorHimMe.y, 2));
+                    let newMag = (object.origin.getQueryRange() + this.getQueryRange()) / 2;
+                    let scaleMag = newMag / mag;
+                    this.pos.x = vectorHimMe.x * scaleMag + object.copy.pos.x;
+                    this.pos.y = vectorHimMe.y * scaleMag + object.copy.pos.y;
+                    break;
+                }
+            case "Rock":
+                {
+                    let vectorRockMe = {
+                        x: this.pos.x - object.origin.pos.x,
+                        y: this.pos.y - object.origin.pos.y
+                    }
+                    let mag = Math.sqrt(Math.pow(vectorRockMe.x, 2) + Math.pow(vectorRockMe.y, 2));
+                    let newMag = (object.origin.getQueryRange() + this.getQueryRange()) / 2;
+                    let scaleMag = newMag / mag;
+                    this.pos.x = vectorRockMe.x * scaleMag + object.origin.pos.x;
+                    this.pos.y = vectorRockMe.y * scaleMag + object.origin.pos.y
+                    break;
+                }
+            case "Score":
+                this.blood += object.copy.value;
+                break;
+        }
+    }
+}
+
+class Terrorist extends Human {
+    constructor(config) {
+        super(config);
+        this.img = "terrorist";
+    }
+}
+
+class CounterTerrorist extends Human {
+    constructor(config) {
+        super(config);
+        this.img = "counter-terrorist";
+    }
+}
+
+class Mitsuku extends Human {
+    constructor(config) {
+        super(config);
+        this.img = "mitsuku";
+        this.isBot = true;
+        this.delayChangeDirection = 0;
+    }
+
+    reply(text, room) {
+        let fakeSocket = {
+            id: this.id,
+            isBot: true
+        }
+        axios({
+            "url": "https://kakko.pandorabots.com/pandora/talk-xml",
+            "data": `input=${text}&botid=9fa364f2fe345a10&custid=9a7bc0f95e4abb96`,
+            "method": "POST",
+            "mode": "no-cors"
+        }).then(res => {
+            let regexString = /\<that\>(.*?)\<\/that\>/.exec(res.data);
+            let responseChat = regexString ? regexString[1] : "...";
+            room.addChat(responseChat, fakeSocket, false);
+        })
+    }
+
+    update(room) {
+        if (this.delayChangeDirection > 0) {
+            this.delayChangeDirection--;
+        } else {
+            let newDegree = random.int(0, 360);
+            let newSpeed = {
+                x: Math.cos(newDegree * Math.PI / 180),
+                y: Math.sin(newDegree * Math.PI / 180)
+            }
+            let scale = this.getMovingSpeed() / Math.sqrt(Math.pow(newSpeed.x, 2) + Math.pow(newSpeed.y, 2));
+
+            this.degree = newDegree;
+            this.speed = {
+                x: newDegree.x * scale,
+                y: newDegree.y * scale
+            }
+
+            this.delayChangeDirection = 10;
+        }
+
+        super.update(room); // update normal person stuff
+
+        let movingSpeed = this.getMovingSpeed();
+        let movingVector = {
+            x: Math.cos(this.degree * Math.PI / 180),
+            y: Math.sin(this.degree * Math.PI / 180)
+        }
+        let magMovingVector = Math.sqrt(Math.pow(movingVector.x, 2) + Math.pow(movingVector.y, 2));
+        let scale = movingSpeed / magMovingVector;
+        movingVector.x *= scale;
+        movingVector.y *= scale;
+        this.pos.x += movingVector.x;
+        this.pos.y += movingVector.y;
+        // end of update bot position
+
+        let item = this.bag.arr[this.bag.index];
+        item.update(room);
+        // if ()
+    }
+}
+
 module.exports = {
     Sprite,
+    Animal,
     Bullet,
+    Score,
+    Player,
     Human,
     Terrorist,
-    PandoraBot,
-    Score
+    CounterTerrorist,
+    Mitsuku
 }

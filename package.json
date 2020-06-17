@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "start": "babel-node index.js",
-    "debug": "nodemon --inspect --exec babel-node index.js"
+    "debug": "nodemon --inspect --exec babel-node index.js",
+    "nodemon": "nodemon --exec babel-node index.js"
   },
   "author": "MrBean <KB2A TEAM>",
   "license": "MIT",

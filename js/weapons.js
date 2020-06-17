@@ -16,10 +16,6 @@ class Item {
         this.delay = this.delayHold;
     }
 
-    switch() {
-        this.resetDelay();
-    }
-
     isDelay() {
         return this.delay > 0;
     }

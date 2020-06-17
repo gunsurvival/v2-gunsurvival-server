@@ -122,7 +122,8 @@ class Mode {
                                 degree,
                                 blood,
                                 status,
-                                size
+                                size,
+                                img
                             } = object;
 
                             publicData = {
@@ -133,7 +134,8 @@ class Mode {
                                 degree,
                                 dead: blood <= 0,
                                 blood,
-                                size
+                                size,
+                                img
                             };
 
                             // publicData = {
@@ -196,7 +198,7 @@ class Mode {
     }
 
     addBot(id, name) {
-        this.addObject("gunners", new Sprites.PandoraBot({
+        this.addObject("gunners", new Sprites.Mitsuku({
             id,
             name,
             pos: {
@@ -220,7 +222,7 @@ class Mode {
             stackDelay = 0;
 
         for (let i = 0; i < 2; i++) {
-            this.addBot("pandorabot" + i, "Pandora Bot " + i);
+            this.addBot("mitsuku" + i, "Mitsuku Bot " + i);
         }
 
         this.interval = setInterval(() => {
@@ -373,7 +375,7 @@ class Mode {
                     gunConfig.ownerID = socket.id;
                     guns.push(new Weapons[ITEM_CONFIG[gunConfig.name].class](gunConfig));
                 }
-                socket.gunner = new Sprites.Terrorist({
+                socket.gunner = new Sprites.CounterTerrorist({
                     id: socket.id,
                     name: socket.name,
                     pos: {
@@ -437,7 +439,7 @@ class Mode {
             let points = this.activeQtree.query(range);
             for (let point of points) {
                 let { userData: pointData } = point;
-                if (pointData.copy.img == "pandora") {
+                if (pointData.copy.isBot) {
                     let { degree, pos } = socket.gunner;
                     let radianMe = degree * Math.PI / 180;
                     let vt1 = {
