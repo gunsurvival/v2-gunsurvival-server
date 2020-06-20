@@ -478,6 +478,7 @@ class Mitsuku extends Human {
         }).then(res => {
             let regexString = /\<that\>(.*?)\<\/that\>/.exec(res.data);
             let responseChat = regexString ? regexString[1] : "...";
+            responseChat = responseChat.replace(/&quot;/g, '| ');
             room.addChat(responseChat, fakeSocket, false);
         })
     }
