@@ -446,7 +446,7 @@ io.on("connection", function(socket) {
             return;
         if (index <= bag.arr.length - 1 && index >= 0) {
             bag.index = index;
-            bag.arr[bag.index].resetDelay();
+            bag.arr[bag.index].take();
         }
 
         io.emit("weapon change", {
