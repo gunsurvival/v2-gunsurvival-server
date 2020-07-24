@@ -3,9 +3,9 @@
   "version": "2.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "babel-node index.js",
-    "debug": "nodemon --inspect --exec babel-node index.js",
-    "dev": "nodemon --exec babel-node index.js"
+    "start": "babel-node server/index.js",
+    "debug": "nodemon --inspect --exec babel-node server/index.js",
+    "dev": "nodemon --exec babel-node server/index.js"
   },
   "author": "MrBean <KB2A TEAM>",
   "license": "MIT",
@@ -20,7 +20,10 @@
     "p5collide": "^2.0.2",
     "random": "^2.2.0",
     "random-normal": "^1.0.0",
+    "sat": "^0.8.0",
     "socket.io": "^2.3.0",
+    "uniqid": "^5.2.0",
+    "uniquid": "^1.1.4",
     "xss-filters": "^1.2.7"
   },
   "devDependencies": {

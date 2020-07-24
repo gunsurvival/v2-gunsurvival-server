@@ -1,11 +1,21 @@
 const randomNormal = require("random-normal");
 
-import { Config, Sprites, Convert } from "./utils.js";
-const { ITEM_CONFIG } = Config;
+import {
+	Config,
+	Sprites,
+	Convert
+} from "./utils.js";
+const {
+	ITEM_CONFIG
+} = Config;
 
 class Item {
 	// constructor({ owner, name, round, reload, weight, delayHold, fire } = {}) {
-	constructor({ ownerID, name, id } = {}) {
+	constructor({
+		ownerID,
+		name,
+		id
+	} = {}) {
 		Object.assign(this, ITEM_CONFIG[name]);
 		this.id = id;
 		this.delay = 0;
@@ -37,7 +47,7 @@ class Item {
 		if (this.isDelay()) {
 			this.delay--;
 		} else {
-			if (this.queueDelay.length > 0){
+			if (this.queueDelay.length > 0) {
 				let newDelayData = this.queueDelay.splice(0, 1);
 				this.delay = this[newDelayData.name];
 			}
@@ -48,7 +58,10 @@ class Item {
 class Gun extends Item {
 	constructor(config) {
 		super(config);
-		let { bulletCount, magazine } = config;
+		let {
+			bulletCount,
+			magazine
+		} = config;
 		this.bulletCount = bulletCount;
 		this.magazine = magazine;
 	}

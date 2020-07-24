@@ -1,30 +1,17 @@
-import { Config, Sprites, Weapons, _QuadTree, Shuffle } from "./utils.js";
+import { Config, Sprites, Weapons, QuadTreeUtil, Shuffle } from "./utils.js";
+import random from "random";
 const { ITEM_CONFIG } = Config;
-const random = require("random");
 
 class Mode {
 	constructor({
-		master,
-		id,
-		text = "Join me now bro",
 		maxPlayer,
-		io
+		_emitter
 	} = {}) {
-		this.id = id; // room id
-		this.io = io;
+		this._emitter = _emitter;
 
 		this.activeObjects = {};
 		this.staticObjects = {};
 
-		this.setting = {
-			master,
-			id,
-			text,
-			maxPlayer,
-			playing: [],
-			timeCreate: Date.now(),
-			speed: 0
-		};
 		this.size = {
 			width: 1500 + 400 * maxPlayer,
 			height: 1000 + 300 * maxPlayer
@@ -97,7 +84,7 @@ class Mode {
 		this.activeQtree;
 		this.staticQtree;
 		this.qtreeSetting = {
-			boundary: new _QuadTree.Rectangle(0, 0, this.size.width, this.size.height),
+			boundary: new QuadTreeUtil.Rectangle(0, 0, this.size.width, this.size.height),
 			split: 4
 		};
 	}
@@ -142,7 +129,7 @@ class Mode {
 					// };
 
 					// if (status.hideintree && blood > 0) { // neu dang tron va con song
-					//     this.io.to(id).emit("update game", {
+					//     this._emitter.emit("update game", {
 					//         groupName: "gunners",
 					//         data: { gunners: [
 					//             data: privateData
@@ -194,7 +181,7 @@ class Mode {
 				gameDatas[groupName].push(Object.assign({ id: object.id }, privateData, publicData));
 			}
 		}
-		this.io.to(this.setting.id).emit("update game", gameDatas);
+		this._emitter.emit("update game", gameDatas);
 	}
 
 	addBot(id, name) {
@@ -233,12 +220,12 @@ class Mode {
 				this.sendUpdates();
 
 				// counting the proccesing speed
-				this.setting.speed = Date.now() - timeStart;
-				if (this.setting.speed / 30 > 1) { // room is not stable, lagging
-					delay = this.setting.speed / 30; // add delay to stabilize the room
+				this.speed = Date.now() - timeStart;
+				if (this.speed / 30 > 1) { // room is not stable, lagging
+					delay = this.speed / 30; // add delay to stabilize the room
 					stackDelay += delay;
 					if (stackDelay > 100) { // now the room is commit "not stable, need to do something"
-						this.io.to(this.setting.id).emit("dialog alert", "Phòng quá tải!");
+						this._emitter.emit("dialog alert", "Phòng quá tải!");
 						this.destroy();
 					}
 				} else {
@@ -257,7 +244,7 @@ class Mode {
 		for (let groupName in this.activeObjects) {
 			let group = this.activeObjects[groupName];
 			for (let object of group) {
-				let staticRange = new _QuadTree.Circle(object.pos.x, object.pos.y, this.biggestStaticDiameterRange + object.getQueryRange() + 1);
+				let staticRange = new QuadTreeUtil.Circle(object.pos.x, object.pos.y, this.biggestStaticDiameterRange + object.getQueryRange() + 1);
 				let staticPoints = this.staticQtree.query(staticRange);
 				for (let point of staticPoints) {
 					let { userData: pointData } = point;
@@ -269,7 +256,7 @@ class Mode {
 					}
 				}
 
-				let activeRange = new _QuadTree.Circle(object.pos.x, object.pos.y, biggestActiveDiameterRange + object.getQueryRange() + 1);
+				let activeRange = new QuadTreeUtil.Circle(object.pos.x, object.pos.y, biggestActiveDiameterRange + object.getQueryRange() + 1);
 				let activePoints = this.activeQtree.query(activeRange);
 				for (let point of activePoints) {
 					let { userData: pointData } = point;
@@ -326,11 +313,11 @@ class Mode {
 
 	createStaticQtree() {
 		let biggestDiameterRange = 0;
-		this.staticQtree = new _QuadTree.QuadTree(this.qtreeSetting.boundary, this.qtreeSetting.split);
+		this.staticQtree = new QuadTreeUtil.QuadTree(this.qtreeSetting.boundary, this.qtreeSetting.split);
 		for (let groupName in this.staticObjects) {
 			let group = this.staticObjects[groupName];
 			for (let object of group) {
-				this.staticQtree.insert(new _QuadTree.Point(object.pos.x, object.pos.y, object));
+				this.staticQtree.insert(new QuadTreeUtil.Point(object.pos.x, object.pos.y, object));
 				if (biggestDiameterRange < object.getQueryRange())
 					biggestDiameterRange = object.getQueryRange();
 			}
@@ -339,7 +326,7 @@ class Mode {
 	}
 
 	_createActiveQtree() {
-		this.activeQtree = new _QuadTree.QuadTree(this.qtreeSetting.boundary, this.qtreeSetting.split);
+		this.activeQtree = new QuadTreeUtil.QuadTree(this.qtreeSetting.boundary, this.qtreeSetting.split);
 		// them object.update vi chay 2 lan vong lap ton thoi gian
 		// insert vao sau 1 vat update se nhanh hon
 		let biggestDiameterRange = 0;
@@ -351,7 +338,7 @@ class Mode {
 					continue;
 				}
 				object.update(this);
-				this.activeQtree.insert(new _QuadTree.Point(object.pos.x, object.pos.y, {
+				this.activeQtree.insert(new QuadTreeUtil.Point(object.pos.x, object.pos.y, {
 					copy: JSON.parse(JSON.stringify(object)),
 					origin: object
 				}));
@@ -363,102 +350,30 @@ class Mode {
 		return biggestDiameterRange; // range collide cao nhat (de query khong bi thieu)
 	}
 
-	join(socket) { // kiem tra cac dieu dien de vao room
-		return new Promise((resolve, reject) => {
-			if (this.setting.playing.length < this.setting.maxPlayer) {
-				let guns = [];
-				Shuffle(this.allWeapons);
-				for (let i = 0; i < 2; i++) {
-					if (i > this.allWeapons.length - 1)
-						break;
-					let gunConfig = this.allWeapons[i];
-					gunConfig.ownerID = socket.id;
-					guns.push(new Weapons[ITEM_CONFIG[gunConfig.name].class](gunConfig));
-				}
-				socket.gunner = new Sprites.CounterTerrorist({
-					id: socket.id,
-					name: socket.name,
-					pos: {
-						x: random.int(-this.size.width / 2, this.size.width / 2),
-						y: random.int(-this.size.height / 2, this.size.height / 2)
-					},
-					bag: {
-						arr: guns,
-						index: 0
-					},
-					defaultRange: 80
-				});
-
-				this.io.to(this.setting.id).emit("toast alert", `${socket.name} đã vào phòng!`);
-				socket.join(this.setting.id, () => {
-					socket.emit("static objects", this.staticObjects);
-
-					this.addPlayer(socket); // tao player theo mode xong thi add vao activeObjects
-					resolve();
-				});
-			} else {
-				reject("Phòng đã đủ người chơi :))");
-			}
-		});
-	}
-
-	disconnect(socket) {
-		return new Promise((resolve, reject) => {
-			let playing = this.setting.playing;
-			playing.splice(playing.indexOf(socket.id), 1); // xóa player trong playing
-			let index = this.activeObjects.gunners.findIndex(e => e.id == socket.gunner.id);
-			this.activeObjects.gunners.splice(index, 1);
-			if (index != -1)
-				resolve();
-			else
-				reject();
-		});
-	}
-
 	addPlayer(socket) { // them player vao room
-		this.addObject("gunners", socket.gunner);
-		this.setting.playing.push(socket.id);
-	}
+		Shuffle(this.allWeapons);
+		let guns = [];
+		for (let i = 0; i < 2; i++) {
+			if (i > this.allWeapons.length - 1)
+				break;
+			let gunConfig = this.allWeapons[i];
+			gunConfig.ownerID = socket.id;
+			guns.push(new Weapons[ITEM_CONFIG[gunConfig.name].class](gunConfig));
+		};
 
-	addChat(text, socket, checkSpam = true) {
-		if (checkSpam) {
-			if (text.length == 0 || text.length > 50 || Date.now() - socket.lastChat < 1000)
-				return;
-		}
-
-		this.io.to(this.setting.id).emit("room chat", {
-			id: socket.id,
-			text
+		const gunner = new Sprites.CounterTerrorist({
+			pos: {
+				x: random.int(-this.size.width / 2, this.size.width / 2),
+				y: random.int(-this.size.height / 2, this.size.height / 2)
+			},
+			bag: {
+				arr: guns,
+				index: 0
+			},
+			defaultRange: 80
 		});
-
-		socket.lastChat = Date.now();
-
-		//check and request a message to bot if valiable
-		if (!socket.isBot) {
-			let range = new _QuadTree.Circle(socket.gunner.pos.x, socket.gunner.pos.y, 500);
-			let points = this.activeQtree.query(range);
-			for (let point of points) {
-				let { userData: pointData } = point;
-				if (pointData.copy.isBot) {
-					let { degree, pos } = socket.gunner;
-					let radianMe = degree * Math.PI / 180;
-					let vt1 = {
-						x: Math.cos(radianMe),
-						y: Math.sin(radianMe)
-					};
-					let mag1 = Math.sqrt(Math.pow(vt1.x, 2) + Math.pow(vt1.y, 2));
-					let radianMeBot = Math.atan2(pointData.origin.pos.y - pos.y, pointData.origin.pos.x - pos.x);
-					let vt2 = {
-						x: Math.cos(radianMeBot),
-						y: Math.sin(radianMeBot)
-					};
-					let mag2 = Math.sqrt(Math.pow(vt2.x, 2) + Math.pow(vt2.y, 2));
-					let angleBetween = (Math.acos(vt1.x * vt2.x + vt1.y * vt2.y) / (mag1 * mag2));
-					if (angleBetween * 180 / Math.PI < 30)
-						pointData.origin.reply(text, this);
-				}
-			}
-		}
+		this.addObject("gunners", gunner);
+		return gunner;
 	}
 
 	addObject(group, data) {
@@ -499,16 +414,13 @@ class Mode {
 
 	destroy() { // xoa room
 		clearInterval(this.interval);
-		this.setting.playing.forEach(id => {
-			this.io.sockets.connected[id].leave(this.setting.id);
-		});
 	}
 }
 
 class Creative extends Mode {
 	constructor(config) {
 		super(config);
-		this.setting.mode = "creative";
+		this.mode = "creative";
 		this.createMap("random");
 	}
 }
@@ -516,7 +428,7 @@ class Creative extends Mode {
 class King extends Mode {
 	constructor(config) {
 		super(config);
-		this.setting.mode = "king";
+		this.mode = "king";
 		this.createMap("template", JSON.parse("[{\"pos\":{\"x\":-240,\"y\":-80},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":0},{\"pos\":{\"x\":-240,\"y\":0},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":1},{\"pos\":{\"x\":-240,\"y\":80},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":2},{\"pos\":{\"x\":-240,\"y\":160},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":3},{\"pos\":{\"x\":-240,\"y\":240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":4},{\"pos\":{\"x\":-160,\"y\":240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":5},{\"pos\":{\"x\":-80,\"y\":240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":6},{\"pos\":{\"x\":0,\"y\":240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":7},{\"pos\":{\"x\":80,\"y\":240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":8},{\"pos\":{\"x\":160,\"y\":240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":9},{\"pos\":{\"x\":240,\"y\":240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":10},{\"pos\":{\"x\":240,\"y\":160},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":11},{\"pos\":{\"x\":240,\"y\":80},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":12},{\"pos\":{\"x\":240,\"y\":0},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":13},{\"pos\":{\"x\":240,\"y\":-80},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":14},{\"pos\":{\"x\":240,\"y\":-160},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":15},{\"pos\":{\"x\":-240,\"y\":-160},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":16},{\"pos\":{\"x\":-240,\"y\":-240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":17},{\"pos\":{\"x\":-160,\"y\":-240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":18},{\"pos\":{\"x\":-80,\"y\":-240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":19},{\"pos\":{\"x\":80,\"y\":-240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":20},{\"pos\":{\"x\":160,\"y\":-240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":21},{\"pos\":{\"x\":240,\"y\":-240},\"size\":0.57,\"degree\":0,\"name\":\"Box_wooden\",\"id\":22},{\"pos\":{\"x\":-80,\"y\":-320},\"size\":0.57,\"degree\":0,\"name\":\"Tree\",\"id\":23},{\"pos\":{\"x\":80,\"y\":-320},\"size\":0.57,\"degree\":0,\"name\":\"Tree\",\"id\":24},{\"pos\":{\"x\":-405,\"y\":-765},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":25},{\"pos\":{\"x\":-405,\"y\":-720},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":26},{\"pos\":{\"x\":-405,\"y\":-630},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":27},{\"pos\":{\"x\":-405,\"y\":-675},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":28},{\"pos\":{\"x\":-360,\"y\":-765},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":29},{\"pos\":{\"x\":-360,\"y\":-720},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":30},{\"pos\":{\"x\":-270,\"y\":-765},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":31},{\"pos\":{\"x\":-270,\"y\":-675},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":32},{\"pos\":{\"x\":-270,\"y\":-630},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":33},{\"pos\":{\"x\":-270,\"y\":-720},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":34},{\"pos\":{\"x\":-225,\"y\":-765},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":35},{\"pos\":{\"x\":-225,\"y\":-720},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":36},{\"pos\":{\"x\":-180,\"y\":-675},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":37},{\"pos\":{\"x\":-180,\"y\":-630},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":38},{\"pos\":{\"x\":-90,\"y\":-765},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":39},{\"pos\":{\"x\":-90,\"y\":-720},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":40},{\"pos\":{\"x\":-90,\"y\":-675},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":41},{\"pos\":{\"x\":-90,\"y\":-630},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":42},{\"pos\":{\"x\":-90,\"y\":-855},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":43},{\"pos\":{\"x\":90,\"y\":-765},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":44},{\"pos\":{\"x\":45,\"y\":-765},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":45},{\"pos\":{\"x\":0,\"y\":-720},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":46},{\"pos\":{\"x\":45,\"y\":-675},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":47},{\"pos\":{\"x\":90,\"y\":-675},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":48},{\"pos\":{\"x\":45,\"y\":-630},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":49},{\"pos\":{\"x\":0,\"y\":-585},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":50},{\"pos\":{\"x\":180,\"y\":-675},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":51},{\"pos\":{\"x\":180,\"y\":-720},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":52},{\"pos\":{\"x\":225,\"y\":-765},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":53},{\"pos\":{\"x\":270,\"y\":-765},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":54},{\"pos\":{\"x\":225,\"y\":-630},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":55},{\"pos\":{\"x\":270,\"y\":-630},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":56},{\"pos\":{\"x\":315,\"y\":-675},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":57},{\"pos\":{\"x\":315,\"y\":-720},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":58},{\"pos\":{\"x\":405,\"y\":-765},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":59},{\"pos\":{\"x\":405,\"y\":-675},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":60},{\"pos\":{\"x\":405,\"y\":-630},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":61},{\"pos\":{\"x\":405,\"y\":-720},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":62},{\"pos\":{\"x\":450,\"y\":-720},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":63},{\"pos\":{\"x\":495,\"y\":-675},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":64},{\"pos\":{\"x\":540,\"y\":-630},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":65},{\"pos\":{\"x\":540,\"y\":-675},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":66},{\"pos\":{\"x\":540,\"y\":-720},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":67},{\"pos\":{\"x\":540,\"y\":-765},\"size\":0.25,\"degree\":0,\"name\":\"Rock\",\"id\":68},{\"pos\":{\"x\":-240,\"y\":-240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":69},{\"pos\":{\"x\":-180,\"y\":-240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":70},{\"pos\":{\"x\":-120,\"y\":-240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":71},{\"pos\":{\"x\":-60,\"y\":-240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":72},{\"pos\":{\"x\":-240,\"y\":-180},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":73},{\"pos\":{\"x\":-240,\"y\":-120},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":74},{\"pos\":{\"x\":-240,\"y\":-60},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":75},{\"pos\":{\"x\":-240,\"y\":0},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":76},{\"pos\":{\"x\":-240,\"y\":60},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":77},{\"pos\":{\"x\":-240,\"y\":120},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":78},{\"pos\":{\"x\":-240,\"y\":180},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":79},{\"pos\":{\"x\":-240,\"y\":240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":80},{\"pos\":{\"x\":-180,\"y\":240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":81},{\"pos\":{\"x\":-120,\"y\":240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":82},{\"pos\":{\"x\":-60,\"y\":240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":83},{\"pos\":{\"x\":0,\"y\":240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":84},{\"pos\":{\"x\":60,\"y\":240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":85},{\"pos\":{\"x\":120,\"y\":240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":86},{\"pos\":{\"x\":180,\"y\":240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":87},{\"pos\":{\"x\":240,\"y\":240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":88},{\"pos\":{\"x\":240,\"y\":180},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":89},{\"pos\":{\"x\":240,\"y\":120},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":90},{\"pos\":{\"x\":240,\"y\":60},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":91},{\"pos\":{\"x\":240,\"y\":0},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":92},{\"pos\":{\"x\":240,\"y\":-60},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":93},{\"pos\":{\"x\":240,\"y\":-120},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":94},{\"pos\":{\"x\":240,\"y\":-180},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":95},{\"pos\":{\"x\":240,\"y\":-240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":96},{\"pos\":{\"x\":180,\"y\":-240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":97},{\"pos\":{\"x\":120,\"y\":-240},\"size\":0.49,\"degree\":0,\"name\":\"Rock\",\"id\":98},{\"pos\":{\"x\":60,\"y\":-240},\"size\":0.5,\"degree\":0,\"name\":\"Rock\",\"id\":99}]"));
 		this.scoreInterval;
 	}
@@ -549,7 +461,7 @@ class King extends Mode {
 	}
 }
 
-module.exports = {
+export {
 	Mode,
 	Creative,
 	King
