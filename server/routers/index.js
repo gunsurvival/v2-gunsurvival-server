@@ -1,9 +1,9 @@
-import index from "./index.js";
+import main from "./main.js"; // trang chu ("/")
 import listimages from "./listimages.js";
 import mapeditor from "./mapeditor.js";
 
 const router = {
-	"/": index,
+	"/": main,
 	"/list-images": listimages,
 	"/mapeditor": mapeditor
 };
