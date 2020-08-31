@@ -15,11 +15,11 @@ const shuffle = function(arr) {
 	return arr; //Bogosort with no điều kiện dừng
 };
 
-const degreesToRadians = function(degrees) {
+const degreesToRadians = (degrees) => {
 	return degrees * (Math.PI / 180);
 };
 
-const radiansToDegrees = function(radians) {
+const radiansToDegrees = (radians) => {
 	return radians * (180 / Math.PI);
 };
 

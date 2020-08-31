@@ -6,17 +6,17 @@ const Disconnect = (server, socket) => {
 
 	const room = server.getRoomBySocketID(socket.id);
 	if (!room)
-		return socket.emit("dialog alert", "Loi! Khong tim thay phong . . .");
+		return socket.emit("alert dialog", "Loi! Khong tim thay phong . . .");
 
 	room.disconnectSocket(socket);
 
-	if (room.playing.length <= 0) {
+	if (room.playerManager.getLength() <= 0) {
 		// nếu ko có ai trong phòng thì xóa phòng
 		server.destroyRoom(room);
 	} else {
-		room._emitter.emit("RoomLeave", socket.id);
-		server._emitter.emit("GetInfo", room.getData());
+		room._emitter.emit("Disconnect", socket.id);
 	}
+	server._emitter.emit("updaterooms", room.getData());
 };
 
 export default Disconnect;

@@ -1,6 +1,7 @@
 import * as Modes from "../modes";
 import QuadTreeUtil from "../helper/quadtree.js";
 import Manager from "../helper/Manager.js";
+import Player from "./Player.js";
 
 class Room {
 	constructor({
@@ -21,14 +22,14 @@ class Room {
 		this.playerManager = new Manager(_emitter);
 
 		this.game = new Modes[mode]({
+			_emitter: this._emitter,
 			maxPlayer: this.maxPlayer,
-			_emitter: this._emitter
 		});
 	}
 
 	destroy() {
-		for (const socket of this.socketManager.items) {
-			socket.leave(this.id);
+		for (const player of this.playerManager.items) {
+			player._emitter.leave(this.id);
 		}
 		this.game.destroy();
 	}
@@ -51,21 +52,20 @@ class Room {
 	socketJoin(socket) {
 		// kiem tra cac dieu dien de vao room
 		return new Promise((resolve, reject) => {
-			if (this.playerManager.find(socket.id) != -1)
+			if (this.playerManager.find({
+				id: socket.id
+			})) {
 				return reject("Bạn đã join phòng khác!");
+			}
 			if (this.playerManager.getLength() < this.maxPlayer) {
 				socket.join(this.id, () => {
-					const player = this.playerManager.add({
+					const player = this.playerManager.add(new Player({
 						id: socket.id,
 						_emitter: socket,
 						name: socket.name
-					});
-					this.game.addPlayer(player); // convert player to Gunner Sprite in world
-					this._emitter.emit(
-						"toast alert",
-						`${socket.name} đã vào phòng!`
-					); // thông báo vào phòng
-					socket.emit("static objects", this.game.staticObjects); // Gửi tọa độ các vật tĩnh
+					}));
+					// this.game.addPlayer(player); // convert player to Gunner Sprite in world
+					// socket.emit("static objects", this.game.staticObjects); // Gửi tọa độ các vật tĩnh
 					resolve();
 				});
 			} else {
@@ -75,7 +75,9 @@ class Room {
 	}
 
 	disconnectSocket(socket) {
-		this.playerManager.delete(this.playerManager.find(socket.id, true));
+		this.playerManager.delete(this.playerManager.find({
+			id: socket.id
+		}));
 		// let index = this.activeObjects.gunners.findIndex(e => e.id == socket.gunner.id);
 		// this.activeObjects.gunners.splice(index, 1);
 		// if (index != -1)
@@ -141,10 +143,6 @@ class Room {
 				}
 			}
 		}
-	}
-
-	getSocketById(id) {
-		return this.socketManager.find(id, true);
 	}
 }
 

@@ -43,7 +43,6 @@ class Game {
 		// });
 		// objects.push(ground);
 		Matter.World.add(this.matterEngine.world, objects);
-		console.log(this.matterEngine.world);
 		debugger;
 	}
 
@@ -64,7 +63,7 @@ class Game {
 
 				// counting the proccesing speed
 				this.speed = Date.now() - timeStart;
-				console.log(this.speed + "ms!");
+				// console.log(this.speed + "ms!");
 				if (this.speed > 30) {
 					// >30ms => room is not stable, lagging
 					delay = this.speed / 30; // add delay to stabilize the room
@@ -138,6 +137,7 @@ class Game {
 
 	addPlayer(socket) {
 		// them player vao room
+		return;
 		shuffle(this.allWeapons);
 		let guns = [];
 		for (let i = 0; i < 2; i++) {

@@ -1,5 +1,5 @@
 const ChangeWeapon = (server, socket, {index} = {}) => {
-	const room = server.getRoomBySocketID(socket);
+	const room = server.getRoomBySocketID(socket.id);
 	if (!room) return;
 
 	const bag = socket.gunner.bag;

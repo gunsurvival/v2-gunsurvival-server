@@ -1,6 +1,6 @@
 const RoomLeave = (server, socket) => {
 	server._emitter.emit("online", server.getOnline());
-	const room = server.getRoomBySocketID(socket);
+	const room = server.getRoomBySocketID(socket.id);
 	if (!room) return;
 
 	room.socketDisconnect(socket);
@@ -9,7 +9,7 @@ const RoomLeave = (server, socket) => {
 		server.destroyRoom(room);
 	} else {
 		room._emitter.emit("RoomLeave", socket.id);
-		server._emitter.emit("GetInfo", room.getData());
+		server._emitter.emit("roomupdates", room.getData());
 	}
 };
 
