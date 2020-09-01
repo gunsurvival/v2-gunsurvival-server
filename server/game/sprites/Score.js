@@ -11,17 +11,22 @@ class Score extends Sprite {
 			config
 		);
 		super(config);
-		const {value, matterBodyConfig} = config;
+		this._value = 10; // default value
+		const {value = this._value, matterBodyConfig = {
+			position: {
+				x: 1,
+				y: 1
+			},
+			circleRadius: this._value,
+		}} = config;
 		this.value = value;
-		this._value = 10;
-		const mbc = matterBodyConfig;
+		const mbc = matterBodyConfig; // use short name
 		this.matterBody = Matter.Bodies.circle(
-			mbc.position.x,
-			mbc.position.y,
-			this._value,
+			1,
+			1,
+			1,
 			mbc
 		);
-		Matter.Body.scale(this.matterBody, this.getScale());
 	}
 
 	getScale() {
@@ -33,6 +38,7 @@ class Score extends Sprite {
 	}
 
 	update() {
+		Matter.Body.scale(this.matterBody, this.getScale());
 		const speed = this.getSpeed();
 		const crPos = this.matterBody.position; // current position
 		this.matterBody.velocity.x += random.float(-speed, speed);
@@ -78,6 +84,16 @@ class Score extends Sprite {
 				break;
 			}
 		}
+	}
+
+	getData() {
+		const defaultData = super.getData();
+		const { position } = this.matterBody;
+		return Object.assign(defaultData, {
+			position,
+			value: this.value,
+			_value: this._value,
+		});
 	}
 }
 

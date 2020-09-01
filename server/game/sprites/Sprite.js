@@ -1,5 +1,4 @@
 import uniqid from "uniqid";
-import Collides from "p5collide";
 
 class Sprite {
 	// getQueryRange ko can truyen cung duoc
@@ -16,6 +15,15 @@ class Sprite {
 
 	draw() {
 		// idk waht i shoud put here
+	}
+
+	getData() {
+		// generate data for emitting
+		return {
+			id: this.id,
+			name: this.name,
+			frameCount: this.frameCount,
+		}
 	}
 }
 

@@ -1,8 +1,15 @@
 class Player {
-	constructor({id, _io, name = `Guest${Date.now()}`} = {}) {
+	constructor({_socket, id, name = `Guest${Date.now()}`} = {}) {
+		this._socket = _socket;
 		this.id = id;
-		this._io = _io;
 		this.name = name;
+	}
+
+	getData() {
+		return {
+			id: this.id,
+			name: this.name
+		}
 	}
 
 	// joinRoom(room) {

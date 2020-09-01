@@ -5,26 +5,29 @@ import Player from "./Player.js";
 
 class Room {
 	constructor({
+		_io,
 		id,
-		text,
 		master,
+		text,
 		maxPlayer,
 		mode,
-		_io,
-		timeCreate = Date.now()
+		timeCreate = Date.now(),
+		gameOption = {}
 	}) {
 		this._io = _io;
 		this.id = id;
 		this.master = master;
 		this.text = text;
 		this.maxPlayer = maxPlayer;
+		this.mode = mode;
 		this.timeCreate = timeCreate;
-		this.playerManager = new Manager(_io);
+		this.playerManager = new Manager();
 
-		this.game = new Modes[mode]({
-			_io: this._io,
-			maxPlayer: this.maxPlayer,
-		});
+		this.game = new Modes[mode](Object.assign({
+			_io,
+			id,
+			maxPlayer,
+		}, gameOption));
 	}
 
 	destroy() {
@@ -60,13 +63,11 @@ class Room {
 			if (this.playerManager.getLength() < this.maxPlayer) {
 				socket.join(this.id, () => {
 					const player = this.playerManager.add(new Player({
+						_socket: socket,
 						id: socket.id,
-						_io: socket,
-						name: socket.name
+						name: socket.name || "idk"
 					}));
-					// this.game.addPlayer(player); // convert player to Gunner Sprite in world
-					// socket.emit("static objects", this.game.staticObjects); // Gửi tọa độ các vật tĩnh
-					resolve();
+					resolve(player);
 				});
 			} else {
 				reject("Phòng đã đủ người chơi :))");
