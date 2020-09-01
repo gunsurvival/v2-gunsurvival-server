@@ -30,7 +30,7 @@ const RoomCreate = (server, socket, option) => {
 	const id = uniqid();
 	const room = server.roomManager.add(
 		new Room({
-			_emitter: server._emitter.to(id),
+			_emitter: server._emitter.sockets.in(id), // do cai server._emitter.to(id) chu ko phai black magic
 			id, // id cua phong
 			text, // dong thong diep
 			master: socket.id, // chu phong
@@ -38,9 +38,10 @@ const RoomCreate = (server, socket, option) => {
 			mode // game mode
 		})
 	);
-	server._emitter.emit("RoomCreate", room.getData());
-	server._emitter.emit("updaterooms", room.getData());
-	
+
+	server._emitter.emit("1");
+	server._emitter.emit("2");
+
 	// room.game.start();
 };
 

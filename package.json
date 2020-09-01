@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "babel-node server/index.js",
-    "debug": "DEBUG=engine,socket.io* nodemon --inspect --exec babel-node server/index.js",
+    "debug": "nodemon --inspect --exec babel-node server/index.js",
     "dev": "nodemon --exec babel-node server/index.js"
   },
   "author": "MrBean <KB2A TEAM>",
