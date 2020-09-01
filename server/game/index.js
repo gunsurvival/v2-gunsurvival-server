@@ -1,5 +1,4 @@
 import logger from "node-color-log";
-import { RoomManager } from "./roommanager";
 import Manager from "./helper/Manager.js";
 import * as events from "./events";
 
@@ -51,19 +50,20 @@ class GameServer {
         return this._io.engine.clientsCount;
     }
 
-    getRoomBySocketID(socketID) {
-        const indexRoom = this.roomManager.items.findIndex(room => {
-            if (
-                room.playerManager.items.findIndex(player => player.id == socketID) !=
-                -1
-            )
-                return true;
-            return false;
-        });
-        // if (indexRoom != -1)
-        return this.roomManager.items[indexRoom];
-        // return undefined;
-    }
+	getRoomBySocketID(socketID) {
+		const indexRoom = this.roomManager.items.findIndex(room => {
+			if (
+				room.playerManager.items.findIndex(
+					player => player.id == socketID
+				) != -1
+			)
+				return true;
+			return false;
+		});
+		// if (indexRoom != -1)
+		return this.roomManager.items[indexRoom];
+		// return undefined;
+	}
 }
 
 export default GameServer;

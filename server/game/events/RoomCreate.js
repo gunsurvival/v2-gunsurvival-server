@@ -40,8 +40,8 @@ const RoomCreate = (server, socket, option) => {
 	);
 	server._io.emit("RoomCreate", room.getData());
 	server._io.emit("updaterooms", room.getData());
-	
-	// room.game.start();
-};
+
+	server._emitter.emit("1");
+	server._emitter.emit("2");
 
 export default RoomCreate;
