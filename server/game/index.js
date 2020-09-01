@@ -4,11 +4,11 @@ import Manager from "./helper/Manager.js";
 import * as events from "./events";
 
 class GameServer {
-    constructor(_emitter) {
-        this._emitter = _emitter;
-        this.roomManager = new Manager(this._emitter); // _emitter is "io"
+    constructor(_io) {
+        this._io = _io;
+        this.roomManager = new Manager(this._io); // _io is "io"
 
-        this._emitter.on("connection", socket => {
+        this._io.on("connection", socket => {
             logger.info(`1 player connected! Online(s): ${this.getOnline()}`);
             // events.RoomCreate(this, socket, {
             // 	text: "idk",
@@ -42,13 +42,13 @@ class GameServer {
     }
 
     destroyRoom(room) {
-        this._emitter.emit("room delete", room.id);
+        this._io.emit("room delete", room.id);
         room.destroy();
         this.roomManager.delete(room);
     }
 
     getOnline() {
-        return this._emitter.engine.clientsCount;
+        return this._io.engine.clientsCount;
     }
 
     getRoomBySocketID(socketID) {

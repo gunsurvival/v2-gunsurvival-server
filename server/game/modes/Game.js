@@ -7,8 +7,8 @@ import {shuffle} from "../helper/helper.js";
 import {items} from "../helper/helperConfig.js";
 
 class Game {
-	constructor({maxPlayer, frameTick = 30, _emitter} = {}) {
-		this._emitter = _emitter;
+	constructor({maxPlayer, frameTick = 30, _io} = {}) {
+		this._io = _io;
 		this.frameTick = frameTick;
 		this.size = {
 			width: 1500 + 400 * maxPlayer,
@@ -70,7 +70,7 @@ class Game {
 					stackDelay += delay;
 					if (stackDelay > 100) {
 						// Phòng này lầy quá nên destroy :(
-						this._emitter.emit("dialog alert", "Phòng quá tải!");
+						this._io.emit("dialog alert", "Phòng quá tải!");
 						this.destroy();
 					}
 				} else {
@@ -89,7 +89,7 @@ class Game {
 		// 	updates.push(body);
 		// }
 
-		this._emitter.emit("Update", this.matterEngine.world.bodies);
+		this._io.emit("Update", this.matterEngine.world.bodies);
 	}
 
 	createMap(mode, templateMap) {

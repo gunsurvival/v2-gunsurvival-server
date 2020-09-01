@@ -10,26 +10,26 @@ class Room {
 		master,
 		maxPlayer,
 		mode,
-		_emitter,
+		_io,
 		timeCreate = Date.now()
 	}) {
-		this._emitter = _emitter;
+		this._io = _io;
 		this.id = id;
 		this.master = master;
 		this.text = text;
 		this.maxPlayer = maxPlayer;
 		this.timeCreate = timeCreate;
-		this.playerManager = new Manager(_emitter);
+		this.playerManager = new Manager(_io);
 
 		this.game = new Modes[mode]({
-			_emitter: this._emitter,
+			_io: this._io,
 			maxPlayer: this.maxPlayer,
 		});
 	}
 
 	destroy() {
 		for (const player of this.playerManager.items) {
-			player._emitter.leave(this.id);
+			player._io.leave(this.id);
 		}
 		this.game.destroy();
 	}
@@ -61,7 +61,7 @@ class Room {
 				socket.join(this.id, () => {
 					const player = this.playerManager.add(new Player({
 						id: socket.id,
-						_emitter: socket,
+						_io: socket,
 						name: socket.name
 					}));
 					// this.game.addPlayer(player); // convert player to Gunner Sprite in world
@@ -97,7 +97,7 @@ class Room {
 				return;
 		}
 
-		this._emitter.emit("room chat", {
+		this._io.emit("room chat", {
 			id: socket.id,
 			text
 		});

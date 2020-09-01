@@ -2,7 +2,7 @@ import logger from "node-color-log";
 
 const Disconnect = (server, socket) => {
 	logger.info(`1 player disconnected! Online(s): ${server.getOnline()}`);
-	server._emitter.emit("online", server.getOnline());
+	server._io.emit("online", server.getOnline());
 
 	const room = server.getRoomBySocketID(socket.id);
 	if (!room)
@@ -14,9 +14,9 @@ const Disconnect = (server, socket) => {
 		// nếu ko có ai trong phòng thì xóa phòng
 		server.destroyRoom(room);
 	} else {
-		room._emitter.emit("Disconnect", socket.id);
+		room._io.to(room.id).emit("Disconnect", socket.id);
 	}
-	server._emitter.emit("updaterooms", room.getData());
+	server._io.emit("updaterooms", room.getData());
 };
 
 export default Disconnect;

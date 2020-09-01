@@ -1,6 +1,5 @@
 class Manager {
-	constructor(_emitter) {
-		this._emitter = _emitter;
+	constructor() {
 		this.items = [];
 	}
 

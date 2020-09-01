@@ -11,7 +11,7 @@ const ChangeWeapon = (server, socket, {index} = {}) => {
 		bag.arr[bag.index].take();
 	}
 
-	room._emitter.emit("ChangeWeapon", {
+	room._io.to(room.id).emit("ChangeWeapon", {
 		// thông báo tới room socket.id đã đổi vũ khí
 		id: socket.id,
 		gun: bag.arr[bag.index]

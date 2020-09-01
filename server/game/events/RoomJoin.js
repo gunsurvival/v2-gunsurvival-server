@@ -8,7 +8,7 @@ const RoomJoin = (server, socket, {id} = {}) => {
 
 	room.socketJoin(socket)
 		.then(() => {
-			server._emitter.emit("updaterooms", room.getData()); // update room table
+			server._io.emit("updaterooms", room.getData()); // update room table
 		})
 		.catch(message => {
 			socket.emit("alert dialog", message);

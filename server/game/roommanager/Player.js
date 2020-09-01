@@ -1,7 +1,7 @@
 class Player {
-	constructor({id, _emitter, name = `Guest${Date.now()}`} = {}) {
+	constructor({id, _io, name = `Guest${Date.now()}`} = {}) {
 		this.id = id;
-		this._emitter = _emitter;
+		this._io = _io;
 		this.name = name;
 	}
 

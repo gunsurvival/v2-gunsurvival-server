@@ -1,5 +1,5 @@
 const RoomLeave = (server, socket) => {
-	server._emitter.emit("online", server.getOnline());
+	server._io.emit("online", server.getOnline());
 	const room = server.getRoomBySocketID(socket.id);
 	if (!room) return;
 
@@ -8,8 +8,8 @@ const RoomLeave = (server, socket) => {
 		// nếu ko có ai trong phòng thì xóa phòng
 		server.destroyRoom(room);
 	} else {
-		room._emitter.emit("RoomLeave", socket.id);
-		server._emitter.emit("roomupdates", room.getData());
+		room._io.to(room.id).emit("RoomLeave", socket.id);
+		server._io.emit("roomupdates", room.getData());
 	}
 };
 

@@ -4,7 +4,7 @@ const Refresh = (server, socket) => {
         roomOptions.push(room.getData());
     }
 
-    server._emitter.emit("updaterooms", roomOptions);
+    socket.emit("updaterooms", roomOptions);
 };
 
 export default Refresh;
