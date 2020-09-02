@@ -37,7 +37,7 @@ const RoomCreate = (server, socket, option) => {
 			maxPlayer, // so luong choi choi
 			mode, // game mode
 			gameOption: {
-				frameTick: 10
+				frameTick: 30
 			}
 		})
 	);

@@ -22,6 +22,11 @@ class Game {
         this.interval; // interval varible
         //setting up world engine ....
         this.matterEngine = Matter.Engine.create();
+        this.matterEngine.world.gravity = {
+                x: 0,
+                y: 0,
+                scale: 0.001
+            }
         this.addSprite(new Sprites.Score({ value: 10 }));
         // gravity: {
         //       	x: 0,
@@ -56,6 +61,9 @@ class Game {
 
             if (delay <= 0) {
                 // not delaying the room
+                for (const sprite of this.spriteManager.items) {
+                    sprite.update();
+                }
                 Matter.Engine.update(this.matterEngine, this.getDeltaTime());
 
                 // counting the proccesing speed

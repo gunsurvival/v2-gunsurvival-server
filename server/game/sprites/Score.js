@@ -34,15 +34,23 @@ class Score extends Sprite {
 	}
 
 	getSpeed() {
-		return (this._value / this.value) * 2;
+		return (this._value / this.value) * 1;
 	}
 
 	update() {
-		Matter.Body.scale(this.matterBody, this.getScale());
+		// debugger;
+		Matter.Body.scale(this.matterBody, this.getScale(), this.getScale());
 		const speed = this.getSpeed();
 		const crPos = this.matterBody.position; // current position
-		this.matterBody.velocity.x += random.float(-speed, speed);
-		this.matterBody.velocity.y += random.float(-speed, speed);
+		// console.log(this.matterBody.velocity);
+		// console.log(random.float(-speed, speed));
+		Matter.Body.set(this.matterBody, {
+			velocity: {
+				x: this.matterBody.velocity.x + random.float(-speed, speed),
+				y: this.matterBody.velocity.y + random.float(-speed, speed)
+			}
+		})
+		// debugger;
 		// Matter.Body.set(this.matterBody, {
 		// 	position: {
 		// 		x: crPos.x + random.float(-speed, speed),
