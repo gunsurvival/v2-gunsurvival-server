@@ -29,7 +29,8 @@ class Game {
 		});
 		Matter.World.add(engine.world, [boxA, boxB, ground]);
 		Matter.Engine.run(engine);
-		console.log(boxB);
+		// console.log(this.matterEngine.world.);
+		// console.log(boxB);
 		this.engine = engine;
 	}
 

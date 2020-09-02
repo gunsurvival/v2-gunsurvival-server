@@ -67,6 +67,7 @@ class Room {
 						id: socket.id,
 						name: socket.name || "idk"
 					}));
+					this.game.addPlayer(player);
 					resolve(player);
 				});
 			} else {

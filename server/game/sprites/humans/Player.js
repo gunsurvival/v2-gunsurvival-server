@@ -3,6 +3,9 @@ import {keyBind} from "../../helper/helperConfig.js";
 
 class Player extends Sprite {
 	constructor(config) {
+		config = Object.assign({
+			name: "Player"
+		}, config);
 		super(config);
 		this.keyDown = {};
 		this.mouseDown = {};
@@ -11,14 +14,14 @@ class Player extends Sprite {
 	update(room) {
 		super.update(room);
 
-		let movingVector = {
+		const movingVector = {
 			x: 0,
 			y: 0
 		};
-		let movingSpeed = this.getMovingSpeed();
-		for (let direction of this.directions) {
+		const movingSpeed = this.getMovingSpeed();
+		for (const direction of this.directions) {
 			// check all valid direction
-			let key = keyBind[direction]; // get key in keyboard config
+			const key = keyBind[direction]; // get key in keyboard config
 			if (this.keyDown[key]) {
 				// if that key is press-down
 				this.status.moving = true;
@@ -45,8 +48,10 @@ class Player extends Sprite {
 		if (magMovingVector > 0) scale = movingSpeed / magMovingVector;
 		movingVector.x *= scale;
 		movingVector.y *= scale;
-		this.pos.x += movingVector.x;
-		this.pos.y += movingVector.y;
+		// this.pos.x += movingVector.x;
+		// this.pos.y += movingVector.y;
+		this.matterBody.position.x += movingVector.x;
+		this.matterBody.position.y += movingVector.y;
 	}
 
 	onKeyDown(key) {

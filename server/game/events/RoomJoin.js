@@ -8,7 +8,6 @@ const RoomJoin = (server, socket, {id} = {}) => {
 
 	room.socketJoin(socket)
 		.then((player) => { // join xong se tra ve new Player()
-			
 			// this.game.addPlayer(player); // convert player to Gunner Sprite in world
 			// socket.emit("static objects", this.game.staticObjects); // Gửi tọa độ các vật tĩnh
 			room._io.to(room.id).emit("RoomJoin", player.getData());

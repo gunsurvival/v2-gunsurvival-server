@@ -23,22 +23,22 @@ class Game {
         //setting up world engine ....
         this.matterEngine = Matter.Engine.create();
         this.matterEngine.world.gravity = {
-                x: 0,
-                y: 0,
-                scale: 0.001
-            }
-        this.addSprite(new Sprites.Score({ value: 10 }));
+            x: 0,
+            y: 0,
+            scale: 0.001
+        }
+        this.addSprite(new Sprites.Score({ value: 30 }));
         // gravity: {
-        //       	x: 0,
-        //       	y: 1,
-        //       	scale: 0.001
+        //          x: 0,
+        //          y: 1,
+        //          scale: 0.001
         // },
         // for (let i = 0; i < 10; i++){
-        // 	objects.push(Matter.Bodies.rectangle(i*400, 200, 80, 80));
+        //  objects.push(Matter.Bodies.rectangle(i*400, 200, 80, 80));
         // }
         // const boxB = Matter.Bodies.rectangle(450, 50, 80, 80);
         // const ground = Matter.Bodies.rectangle(400, 610, 810, 60, {
-        // 	isStatic: true
+        //  isStatic: true
         // });
         // objects.push(ground);
     }
@@ -101,39 +101,39 @@ class Game {
 
     createMap(mode, templateMap) {
         // switch (mode) {
-        // 	case "random":
-        // 		for (let i = 0; i <= (70 / 2500) * this.size.width; i++) {
-        // 			this.staticObjects.map.push(new Sprites.Sprite({
-        // 				pos: {
-        // 					x: random.float(-this.size.width / 2, this.size.width / 2).toFixed(1) - 0,
-        // 					y: random.float(-this.size.height / 2, this.size.height / 2).toFixed(1) - 0
-        // 				},
-        // 				size: random.float(0.5, 1.5).toFixed(3) - 0, //add more size
-        // 				defaultRange: 180,
-        // 				degree: 0,
-        // 				type: ["Rock", "Tree"][random.int(0, 1)],
-        // 				id: i
-        // 			}));
-        // 			let newRange = this.staticObjects.map[this.staticObjects.map.length - 1].getQueryRange();
-        // 			if (this.biggestStaticDiameterRange < newRange)
-        // 				this.biggestStaticDiameterRange = newRange;
-        // 		}
-        // 		break;
-        // 	case "template":
-        // 		for (let object of templateMap) {
-        // 			this.staticObjects.map.push(new Sprites.Sprite({
-        // 				pos: object.pos,
-        // 				size: object.size, //add more size
-        // 				defaultRange: 180,
-        // 				degree: object.degree,
-        // 				type: object.name,
-        // 				id: object.id
-        // 			}));
-        // 			let newRange = this.staticObjects.map[this.staticObjects.map.length - 1].getQueryRange();
-        // 			if (this.biggestStaticDiameterRange < newRange)
-        // 				this.biggestStaticDiameterRange = newRange;
-        // 		}
-        // 		break;
+        //  case "random":
+        //      for (let i = 0; i <= (70 / 2500) * this.size.width; i++) {
+        //          this.staticObjects.map.push(new Sprites.Sprite({
+        //              pos: {
+        //                  x: random.float(-this.size.width / 2, this.size.width / 2).toFixed(1) - 0,
+        //                  y: random.float(-this.size.height / 2, this.size.height / 2).toFixed(1) - 0
+        //              },
+        //              size: random.float(0.5, 1.5).toFixed(3) - 0, //add more size
+        //              defaultRange: 180,
+        //              degree: 0,
+        //              type: ["Rock", "Tree"][random.int(0, 1)],
+        //              id: i
+        //          }));
+        //          let newRange = this.staticObjects.map[this.staticObjects.map.length - 1].getQueryRange();
+        //          if (this.biggestStaticDiameterRange < newRange)
+        //              this.biggestStaticDiameterRange = newRange;
+        //      }
+        //      break;
+        //  case "template":
+        //      for (let object of templateMap) {
+        //          this.staticObjects.map.push(new Sprites.Sprite({
+        //              pos: object.pos,
+        //              size: object.size, //add more size
+        //              defaultRange: 180,
+        //              degree: object.degree,
+        //              type: object.name,
+        //              id: object.id
+        //          }));
+        //          let newRange = this.staticObjects.map[this.staticObjects.map.length - 1].getQueryRange();
+        //          if (this.biggestStaticDiameterRange < newRange)
+        //              this.biggestStaticDiameterRange = newRange;
+        //      }
+        //      break;
         // }
     }
 
@@ -142,31 +142,35 @@ class Game {
         Matter.World.add(this.matterEngine.world, sprite.matterBody);
     }
 
-    addPlayer(socket) {
+    addPlayer(player) {
         // them player vao room
-        return;
-        shuffle(this.allWeapons);
-        let guns = [];
-        for (let i = 0; i < 2; i++) {
-            if (i > this.allWeapons.length - 1) break;
-            let gunConfig = this.allWeapons[i];
-            gunConfig.ownerID = socket.id;
-            guns.push(new Guns[items[gunConfig.name].class](gunConfig));
-        }
+        // shuffle(this.allWeapons);
+        // let guns = [];
+        // for (let i = 0; i < 2; i++) {
+        //     if (i > this.allWeapons.length - 1) break;
+        //     let gunConfig = this.allWeapons[i];
+        //     gunConfig.ownerID = socket.id;
+        //     guns.push(new Guns[items[gunConfig.name].class](gunConfig));
+        // }
 
         const gunner = new Sprites.CounterTerrorist({
-            id: socket.id,
-            pos: {
-                x: random.int(-this.size.width / 2, this.size.width / 2),
-                y: random.int(-this.size.height / 2, this.size.height / 2)
-            },
-            bag: {
-                arr: guns,
-                index: 0
-            },
-            defaultRange: 80
+            id: player.id,
+            playerName: player.name,
+            matterBodyConfig: {
+                position: {
+                    x: 0,
+                    y: 0
+                    // x: random.int(-this.size.width / 2, this.size.width / 2),
+                    // y: random.int(-this.size.height / 2, this.size.height / 2)
+                }
+            }
+            // bag: {
+            //     arr: guns,
+            //     index: 0
+            // }
         });
-        // this.addObject("gunners", gunner);
+
+        this.addSprite(gunner);
         return gunner;
     }
 

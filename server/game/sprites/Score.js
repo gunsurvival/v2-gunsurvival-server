@@ -39,7 +39,8 @@ class Score extends Sprite {
 
 	update() {
 		// debugger;
-		Matter.Body.scale(this.matterBody, this.getScale(), this.getScale());
+		const scale = this.getScale();
+		Matter.Body.scale(this.matterBody, scale, scale);
 		const speed = this.getSpeed();
 		const crPos = this.matterBody.position; // current position
 		// console.log(this.matterBody.velocity);

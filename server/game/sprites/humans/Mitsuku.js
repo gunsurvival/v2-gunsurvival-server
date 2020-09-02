@@ -29,6 +29,7 @@ class Mitsuku extends Human {
 	}
 
 	update(room) {
+		// super.update(room);
 		if (this.delayChangeDirection > 0) {
 			this.delayChangeDirection--;
 		} else {

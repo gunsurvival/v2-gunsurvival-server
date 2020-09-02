@@ -1,27 +1,28 @@
 import Player from "./Player.js";
+import * as Matter from "matter-js";
 
 class Human extends Player {
 	constructor(config) {
-		config.type = "Human";
+		// config.type = "Human";
 		super(config);
-		let {bag} = config;
 		this.bag = bag;
 		this.blood = 100;
-		this.killerID = "";
 		this.holdingCoolDown = 0;
 		this.status = {};
-		this.lastPos = {
-			x: this.pos.x,
-			y: this.pos.y
-		};
 
 		this.directions = ["up", "down", "left", "right"];
+		const {
+			bag = {},
+			matterBodyConfig = {}
+		} = config;
+		const mbc = matterBodyConfig; // short name
+		this.matterBody = Matter.Bodies.circle(0, 0, 80, mbc);
 	}
 
 	getMovingSpeed() {
 		let speed = 7;
-		let holdingGun = this.bag.arr[this.bag.index];
-		speed -= holdingGun.weight;
+		// let holdingGun = this.bag.arr[this.bag.index];
+		// speed -= holdingGun.weight;
 
 		if (this.mouseDown["left"])
 			// do somthing with mouse left button
@@ -33,33 +34,32 @@ class Human extends Player {
 
 		if (speed <= 1) speed = 1;
 
-		return speed / this.size; //normal
+		return speed / this.getScale(); //normal
 	}
 
 	isDead() {
 		return this.blood <= 0;
 	}
 
+	getScale() {
+		return Math.min(Math.max(this.blood / 100, 0.5), 2); // 0.5 >= x >= 2
+	}
+
 	update(room) {
 		super.update(room);
 
 		if (this.isDead()) {
-			this.blood = 0;
 			return;
 		}
 
-		this.lastPos.x = this.pos.x;
-		this.lastPos.y = this.pos.y;
-		this.size = this.blood / 100;
-		if (this.size > 2) this.size = 2;
-		if (this.size < 0.5) this.size = 0.5;
+		const scale = this.getScale();
+		Matter.Body.scale(this.matterBody, scale, scale);
+		
 		this.status.hideInTree = false;
 		this.status.moving = false;
 
-		super.update(room); // update position
-
-		let item = this.bag.arr[this.bag.index];
-		item.update(room);
+		// let item = this.bag.arr[this.bag.index];
+		// item.update(room);
 		// if ()
 	}
 
@@ -121,6 +121,14 @@ class Human extends Player {
 				this.blood += object.copy.value;
 				break;
 		}
+	}
+
+	getData() {
+		const defaultData = super.getData();
+		const {position} = this.matterBody;
+		return Object.assign(defaultData, {
+			position
+		})
 	}
 }
 
