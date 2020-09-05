@@ -36,6 +36,12 @@ class GameServer {
             socket.on("RoomLeave", data =>
                 events.RoomLeave(this, socket, data)
             );
+            socket.on("UpdateLogkm", data =>
+                events.UpdateLogkm(this, socket, data)
+            );
+            socket.on("UpdateRotate", data =>
+                events.UpdateRotate(this, socket, data)
+            );
         });
         logger.info("Game Server started!");
     }

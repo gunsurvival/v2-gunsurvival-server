@@ -1,11 +1,13 @@
 const RoomJoin = (server, socket, {id} = {}) => {
-	if (server.getRoomBySocketID(socket.id))
-		return socket.emit("alert dialog", "Ban da tham gia phong khac roi!"); // neu da join roi thi huy bo
+	// check form
+	id = String(id);
 	const room = server.roomManager.find({id});
 	if (!room)
 		// khong tim thay phong
-		return socket.emit("alert dialog", "Room not found!");
+		return socket.emit("alert dialog", "Vui long thu lai sau , , ,");
 
+	if (server.getRoomBySocketID(socket.id))
+		return socket.emit("alert dialog", "Ban da tham gia phong khac roi!"); // neu da join roi thi huy bo
 	room.socketJoin(socket)
 		.then((player) => { // join xong se tra ve new Player()
 			// this.game.addPlayer(player); // convert player to Gunner Sprite in world

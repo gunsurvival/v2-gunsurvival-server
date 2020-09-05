@@ -5,36 +5,47 @@ class Human extends Player {
 	constructor(config) {
 		// config.type = "Human";
 		super(config);
-		this.bag = bag;
-		this.blood = 100;
-		this.holdingCoolDown = 0;
-		this.status = {};
 
-		this.directions = ["up", "down", "left", "right"];
 		const {
+			matterBodyOption = {},
 			bag = {},
-			matterBodyConfig = {}
 		} = config;
-		const mbc = matterBodyConfig; // short name
-		this.matterBody = Matter.Bodies.circle(0, 0, 80, mbc);
+		
+		this._matterBodyOption = Object.assign({
+            circleRadius: 40,
+            mass: 1
+        }, matterBodyOption);
+        this.matterBody = Matter.Bodies.circle(0, 0, this._matterBodyOption.circleRadius, this._matterBodyOption);
+        this.bag = bag;
+        this.blood = 100;
+        this.holdingCoolDown = 0;
+        this.status = {};
 	}
 
 	getMovingSpeed() {
-		let speed = 7;
+		let speed = 8;
 		// let holdingGun = this.bag.arr[this.bag.index];
 		// speed -= holdingGun.weight;
 
-		if (this.mouseDown["left"])
-			// do somthing with mouse left button
+		if (this.logkmManager.find({
+			mouseButton: "left",
+			value: true
+		})) {
+			// decrease speed when firing
 			speed--;
+		}
 
-		if (this.keyDown["shift"])
-			// walking
+		if (this.logkmManager.find({
+			keyCode: 16,
+			value: true
+		})) {
+			// is walking
 			speed *= 5 / 10;
+		}
 
 		if (speed <= 1) speed = 1;
 
-		return speed / this.getScale(); //normal
+		return speed / this.getScale(); //cang to = cang di cham
 	}
 
 	isDead() {
@@ -51,9 +62,6 @@ class Human extends Player {
 		if (this.isDead()) {
 			return;
 		}
-
-		const scale = this.getScale();
-		Matter.Body.scale(this.matterBody, scale, scale);
 		
 		this.status.hideInTree = false;
 		this.status.moving = false;
@@ -124,11 +132,8 @@ class Human extends Player {
 	}
 
 	getData() {
-		const defaultData = super.getData();
-		const {position} = this.matterBody;
-		return Object.assign(defaultData, {
-			position
-		})
+		return Object.assign(super.getData(), {
+		});
 	}
 }
 

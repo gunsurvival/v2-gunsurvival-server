@@ -27,7 +27,42 @@ class Game {
             y: 0,
             scale: 0.001
         }
-        this.addSprite(new Sprites.Score({ value: 30 }));
+        this.addSprite(new Sprites.Score({ 
+            value: 10,
+            position: {
+                x: 50,
+                y: 50
+            }
+        }));
+        this.addSprite(new Sprites.Score({ 
+            value: 10,
+            position: {
+                x: 50,
+                y: 50
+            }
+        }));
+        this.addSprite(new Sprites.Score({ 
+            value: 10,
+            position: {
+                x: 50,
+                y: 50
+            }
+        }));
+        this.addSprite(new Sprites.Score({ 
+            value: 10,
+            position: {
+                x: 50,
+                y: 50
+            }
+        }));
+        this.addSprite(new Sprites.Score({ 
+            value: 10,
+            position: {
+                x: 50,
+                y: 50
+            }
+        }));
+        this.createMap("random");
         // gravity: {
         //          x: 0,
         //          y: 1,
@@ -43,9 +78,15 @@ class Game {
         // objects.push(ground);
     }
 
-    addSprite(sprite) {
+    addSprite(sprite, rotate) {
         this.spriteManager.add(sprite);
         Matter.World.add(this.matterEngine.world, sprite.matterBody);
+    }
+
+    updateRotate(sprite, rotate) {
+        Matter.Body.set(sprite.matterBody, {
+            angle: rotate
+        });
     }
 
     getDeltaTime() {
@@ -100,41 +141,27 @@ class Game {
     }
 
     createMap(mode, templateMap) {
-        // switch (mode) {
-        //  case "random":
-        //      for (let i = 0; i <= (70 / 2500) * this.size.width; i++) {
-        //          this.staticObjects.map.push(new Sprites.Sprite({
-        //              pos: {
-        //                  x: random.float(-this.size.width / 2, this.size.width / 2).toFixed(1) - 0,
-        //                  y: random.float(-this.size.height / 2, this.size.height / 2).toFixed(1) - 0
-        //              },
-        //              size: random.float(0.5, 1.5).toFixed(3) - 0, //add more size
-        //              defaultRange: 180,
-        //              degree: 0,
-        //              type: ["Rock", "Tree"][random.int(0, 1)],
-        //              id: i
-        //          }));
-        //          let newRange = this.staticObjects.map[this.staticObjects.map.length - 1].getQueryRange();
-        //          if (this.biggestStaticDiameterRange < newRange)
-        //              this.biggestStaticDiameterRange = newRange;
-        //      }
-        //      break;
-        //  case "template":
-        //      for (let object of templateMap) {
-        //          this.staticObjects.map.push(new Sprites.Sprite({
-        //              pos: object.pos,
-        //              size: object.size, //add more size
-        //              defaultRange: 180,
-        //              degree: object.degree,
-        //              type: object.name,
-        //              id: object.id
-        //          }));
-        //          let newRange = this.staticObjects.map[this.staticObjects.map.length - 1].getQueryRange();
-        //          if (this.biggestStaticDiameterRange < newRange)
-        //              this.biggestStaticDiameterRange = newRange;
-        //      }
-        //      break;
-        // }
+        const mapSprite = ["Tree", "Rock"]
+        switch (mode) {
+         case "random":
+             for (let i = 0; i <= this.size.width / 300; i++) {
+                 this.addSprite(new Sprites[mapSprite[random.int(0, mapSprite.length-1)]]({
+                    matterBodyOption: {
+                        position: {
+                            x: random.float(-this.size.width / 2, this.size.width / 2).toFixed(1) - 0,
+                            y: random.float(-this.size.height / 2, this.size.height / 2).toFixed(1) - 0
+                        }
+                    }
+                     // size: random.float(0.5, 1.5).toFixed(3) - 0, //add more size
+                 }));
+             }
+             break;
+         case "template":
+             for (const spriteOption of templateMap) {
+                 this.addSprite(new Sprites.Sprite(spriteOption));
+             }
+             break;
+        }
     }
 
     addSpriteByName(spriteName, spriteConfig) {
@@ -156,7 +183,7 @@ class Game {
         const gunner = new Sprites.CounterTerrorist({
             id: player.id,
             playerName: player.name,
-            matterBodyConfig: {
+            matterBodyOption: {
                 position: {
                     x: 0,
                     y: 0
@@ -177,6 +204,7 @@ class Game {
     destroy() {
         // xoa room
         clearInterval(this.interval);
+        Matter.Engine.clear(this.matterEngine);
     }
 }
 

@@ -6,7 +6,8 @@ import Pingms from "./Pingms.js";
 import RoomCreate from "./RoomCreate.js";
 import RoomJoin from "./RoomJoin.js";
 import RoomLeave from "./RoomLeave.js";
-import UpdateData from "./UpdateData.js";
+import UpdateLogkm from "./UpdateLogkm.js";
+import UpdateRotate from "./UpdateRotate.js";
 
 export {
 	ChangeWeapon,
@@ -17,5 +18,6 @@ export {
 	RoomCreate,
 	RoomJoin,
 	RoomLeave,
-	UpdateData
+	UpdateLogkm,
+	UpdateRotate,
 };
