@@ -1,6 +1,6 @@
 import logger from "node-color-log";
 import Manager from "./helper/Manager.js";
-import * as events from "./events";
+import * as event from "./event";
 
 class GameServer {
     constructor(_io) {
@@ -9,38 +9,38 @@ class GameServer {
 
         this._io.on("connection", socket => {
             logger.info(`1 player connected! Online(s): ${this.getOnline()}`);
-            // events.RoomCreate(this, socket, {
+            // event.RoomCreate(this, socket, {
             // 	text: "idk",
             // 	maxPlayer: 6,
             // 	mode: "Creative"
             // });
             socket.on("disconnect", data =>
-                events.Disconnect(this, socket, data)
+                event.Disconnect(this, socket, data)
             );
-            // for (const FuncName in events) {
-            // 	socket.on(FuncName, data => events[FuncName](this, socket, data));
+            // for (const FuncName in event) {
+            // 	socket.on(FuncName, data => event[FuncName](this, socket, data));
             // }
             socket.on("UpdateData", data =>
-                events.UpdateData(this, socket, data)
+                event.UpdateData(this, socket, data)
             );
             socket.on("ChangeWeapon", data =>
-                events.ChangeWeapon(this, socket, data)
+                event.ChangeWeapon(this, socket, data)
             );
-            socket.on("Chat", data => events.Chat(this, socket, data));
-            socket.on("Refresh", data => events.Refresh(this, socket, data));
-            socket.on("Pingms", data => events.Pingms(this, socket, data));
+            socket.on("Chat", data => event.Chat(this, socket, data));
+            socket.on("Refresh", data => event.Refresh(this, socket, data));
+            socket.on("Pingms", data => event.Pingms(this, socket, data));
             socket.on("RoomCreate", data =>
-                events.RoomCreate(this, socket, data)
+                event.RoomCreate(this, socket, data)
             );
-            socket.on("RoomJoin", data => events.RoomJoin(this, socket, data));
+            socket.on("RoomJoin", data => event.RoomJoin(this, socket, data));
             socket.on("RoomLeave", data =>
-                events.RoomLeave(this, socket, data)
+                event.RoomLeave(this, socket, data)
             );
             socket.on("UpdateLogkm", data =>
-                events.UpdateLogkm(this, socket, data)
+                event.UpdateLogkm(this, socket, data)
             );
             socket.on("UpdateRotate", data =>
-                events.UpdateRotate(this, socket, data)
+                event.UpdateRotate(this, socket, data)
             );
         });
         logger.info("Game Server started!");

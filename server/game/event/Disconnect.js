@@ -8,7 +8,7 @@ const Disconnect = (server, socket) => {
 	if (!room)
 		return socket.emit("alert dialog", "Loi! Khong tim thay phong . . .");
 
-	room.disconnectSocket(socket);
+	room.socketDisconnect(socket);
 
 	if (room.playerManager.getLength() <= 0) {
 		// nếu ko có ai trong phòng thì xóa phòng

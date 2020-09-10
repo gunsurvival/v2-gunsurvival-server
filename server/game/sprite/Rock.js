@@ -1,8 +1,8 @@
-import Sprite from "./Sprite.js";
+import CircleSprite from "./CircleSprite.js";
 import * as Matter from "matter-js";
 import random from "random";
 
-class Rock extends Sprite {
+class Rock extends CircleSprite {
 	constructor(config) {
 		config = Object.assign(
 			{
@@ -11,22 +11,16 @@ class Rock extends Sprite {
 			config
 		);
 		super(config);
+
 		const {
 			matterBodyOption = {}
 		} = config;
 
 		this._matterBodyOption = Object.assign({
-            circleRadius: 90
+            circleRadius: 90,
+            isStatic: true
         }, matterBodyOption);
         this.matterBody = Matter.Bodies.circle(0, 0, this._matterBodyOption.circleRadius, this._matterBodyOption);
-        Matter.Body.setMass(this.matterBody, 1000000);
-        // console.log(this.matterBody)
-	}
-
-	getScale() {
-		const scale = this.matterBody.circleRadius / this._matterBodyOption.circleRadius;
-		this._scale = scale;
-		return scale;
 	}
 
 	update() {
@@ -35,7 +29,7 @@ class Rock extends Sprite {
 
 	getData() {
 		return Object.assign(super.getData(), {
-			_circleRadius: this._circleRadius,
+			// idk
 		});
 	}
 }

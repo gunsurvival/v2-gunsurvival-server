@@ -1,9 +1,8 @@
 import random from "random";
 import * as Matter from "matter-js";
 import Manager from "../helper/Manager.js";
-import Sprites from "../sprites";
-import * as QuadTreeUtil from "../helper/quadtree.js";
-import { Guns } from "../items";
+import { SpriteClasses as Sprite } from "../sprite/"; // all sprite classes
+import { Gun } from "../item/";
 import { shuffle } from "../helper/helper.js";
 import { items } from "../helper/helperConfig.js";
 
@@ -27,35 +26,35 @@ class Game {
             y: 0,
             scale: 0.001
         }
-        this.addSprite(new Sprites.Score({ 
+        this.addSprite(new Sprite.Score({
             value: 10,
             position: {
                 x: 50,
                 y: 50
             }
         }));
-        this.addSprite(new Sprites.Score({ 
+        this.addSprite(new Sprite.Score({
             value: 10,
             position: {
                 x: 50,
                 y: 50
             }
         }));
-        this.addSprite(new Sprites.Score({ 
+        this.addSprite(new Sprite.Score({
             value: 10,
             position: {
                 x: 50,
                 y: 50
             }
         }));
-        this.addSprite(new Sprites.Score({ 
+        this.addSprite(new Sprite.Score({
             value: 10,
             position: {
                 x: 50,
                 y: 50
             }
         }));
-        this.addSprite(new Sprites.Score({ 
+        this.addSprite(new Sprite.Score({
             value: 10,
             position: {
                 x: 50,
@@ -141,31 +140,32 @@ class Game {
     }
 
     createMap(mode, templateMap) {
-        const mapSprite = ["Tree", "Rock"]
+        const mapSprite = ["Tree", "Rock"];
         switch (mode) {
-         case "random":
-             for (let i = 0; i <= this.size.width / 300; i++) {
-                 this.addSprite(new Sprites[mapSprite[random.int(0, mapSprite.length-1)]]({
-                    matterBodyOption: {
-                        position: {
-                            x: random.float(-this.size.width / 2, this.size.width / 2).toFixed(1) - 0,
-                            y: random.float(-this.size.height / 2, this.size.height / 2).toFixed(1) - 0
+            case "random":
+                for (let i = 0; i <= this.size.width / 300; i++) {
+                    const randomIndex = random.int(0, mapSprite.length - 1);
+                    this.addSprite(new Sprite[mapSprite[randomIndex]]({
+                        matterBodyOption: {
+                            position: {
+                                x: random.float(-this.size.width / 2, this.size.width / 2).toFixed(1) - 0,
+                                y: random.float(-this.size.height / 2, this.size.height / 2).toFixed(1) - 0
+                            }
                         }
-                    }
-                     // size: random.float(0.5, 1.5).toFixed(3) - 0, //add more size
-                 }));
-             }
-             break;
-         case "template":
-             for (const spriteOption of templateMap) {
-                 this.addSprite(new Sprites.Sprite(spriteOption));
-             }
-             break;
+                        // size: random.float(0.5, 1.5).toFixed(3) - 0, //add more size
+                    }));
+                }
+                break;
+            case "template":
+                for (const spriteOption of templateMap) {
+                    this.addSprite(new Sprite.Sprite(spriteOption));
+                }
+                break;
         }
     }
 
     addSpriteByName(spriteName, spriteConfig) {
-        const sprite = new Sprites[spriteName](spriteConfig);
+        const sprite = new Sprite[spriteName](spriteConfig);
         Matter.World.add(this.matterEngine.world, sprite.matterBody);
     }
 
@@ -180,7 +180,7 @@ class Game {
         //     guns.push(new Guns[items[gunConfig.name].class](gunConfig));
         // }
 
-        const gunner = new Sprites.CounterTerrorist({
+        const gunner = new Sprite.CounterTerrorist({
             id: player.id,
             playerName: player.name,
             matterBodyOption: {

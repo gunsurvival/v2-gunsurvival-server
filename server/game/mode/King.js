@@ -1,5 +1,5 @@
 import random from "random";
-import Sprites from "../sprites";
+import * as Sprite from "../sprite";
 import Game from "./Game.js";
 
 class King extends Game {

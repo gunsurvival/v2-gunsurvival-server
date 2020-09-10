@@ -6,7 +6,7 @@ import logger from "node-color-log";
 import session from "express-session";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
-import routers from "./routers";
+import router from "./router";
 import GameServer from "./game";
 
 const app = express();
@@ -38,8 +38,8 @@ app.use(
 );
 app.use(bodyParser.json());
 
-for (const url in routers) {
-	app.use(url, routers[url]);
+for (const url in router) {
+	app.use(url, router[url]);
 }
 
 server.listen(port, function() {

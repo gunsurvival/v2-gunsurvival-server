@@ -13,7 +13,6 @@ class Human extends Player {
 		
 		this._matterBodyOption = Object.assign({
             circleRadius: 40,
-            mass: 1
         }, matterBodyOption);
         this.matterBody = Matter.Bodies.circle(0, 0, this._matterBodyOption.circleRadius, this._matterBodyOption);
         this.bag = bag;

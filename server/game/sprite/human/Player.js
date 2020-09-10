@@ -1,9 +1,9 @@
 import * as Matter from "matter-js";
-import Sprite from "../Sprite.js";
+import CircleSprite from "../CircleSprite.js";
 import Manager from "../../helper/Manager.js";
 import { keyBind } from "../../helper/helperConfig.js";
 
-class Player extends Sprite {
+class Player extends CircleSprite {
     constructor(config) {
         config = Object.assign({
             name: "Player"

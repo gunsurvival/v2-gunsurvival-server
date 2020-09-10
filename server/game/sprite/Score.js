@@ -1,8 +1,8 @@
-import Sprite from "./Sprite.js";
+import CircleSprite from "./CircleSprite.js";
 import * as Matter from "matter-js";
 import random from "random";
 
-class Score extends Sprite {
+class Score extends CircleSprite {
     constructor(config) {
         config = Object.assign({
                 name: "Score"
@@ -17,43 +17,27 @@ class Score extends Sprite {
 
         this._matterBodyOption = Object.assign({
             circleRadius: 10,
-            mass: 0.5
         }, matterBodyOption);
         this.matterBody = Matter.Bodies.circle(0, 0, this._matterBodyOption.circleRadius, this._matterBodyOption);
         this.value = value;
     }
 
-    getScale() {
-        const scale = this.matterBody.circleRadius / this._circleRadius;
-        this._scale = scale;
-        return scale;
-    }
-
     getSpeed() {
-        return (this._circleRadius / this.value) * 0.2;
+        return this.getScale() * 0.2;
     }
 
     update() {
-        // debugger;
+        super.update();
         const scale = this.getScale();
         Matter.Body.scale(this.matterBody, scale, scale);
         const speed = this.getSpeed();
         const crPos = this.matterBody.position; // current position
-        // console.log(this.matterBody.velocity);
-        // console.log(random.float(-speed, speed));
         Matter.Body.set(this.matterBody, {
             velocity: {
                 x: this.matterBody.velocity.x + random.float(-speed, speed),
                 y: this.matterBody.velocity.y + random.float(-speed, speed)
             }
-        })
-        // debugger;
-        // Matter.Body.set(this.matterBody, {
-        // 	position: {
-        // 		x: crPos.x + random.float(-speed, speed),
-        // 		y: crPos.y + random.float(-speed, speed)
-        // 	}
-        // });
+        });
     }
 
     collide(object) {
@@ -96,7 +80,6 @@ class Score extends Sprite {
     getData() {
         return Object.assign(super.getData(), {
             value: this.value,
-            _circleRadius: this._circleRadius,
         });
     }
 }

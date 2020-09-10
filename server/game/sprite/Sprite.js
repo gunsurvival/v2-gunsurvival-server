@@ -17,10 +17,6 @@ class Sprite {
 			Matter.Body.scale(this.matterBody, scale, scale);
 	}
 
-	draw() {
-		// idk waht i shoud put here
-	}
-
 	getScale() {
 		const scale = 1;
 		this._scale = scale;

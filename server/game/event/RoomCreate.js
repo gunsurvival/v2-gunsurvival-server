@@ -1,12 +1,12 @@
 import xssFilters from "xss-filters";
 import uniqid from "uniqid";
 import logger from "node-color-log";
-import * as Modes from "../modes";
+import * as Mode from "../mode";
 import {Room} from "../roommanager";
 
 const modeList = (() => {
 	const out = [];
-	for (const modeName in Modes) {
+	for (const modeName in Mode) {
 		out.push(modeName);
 	}
 	return out;

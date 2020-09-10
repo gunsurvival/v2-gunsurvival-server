@@ -2,7 +2,6 @@ const UpdateLogkm = (server, socket, {keyCode, value} = {}) => {
 	// check form
 	keyCode = parseInt(keyCode);
 	value = Boolean(value);
-	debugger;
 	
 	const room = server.getRoomBySocketID(socket.id);
 	if (!room || isNaN(keyCode)) return;

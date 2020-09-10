@@ -4,16 +4,16 @@ import Rock from "./Rock.js";
 import Animal from "./Animal.js";
 import Bullet from "./Bullet.js";
 import Score from "./Score.js";
-import * as Humans from "./humans";
+import * as Human from "./human/";
+import * as Bot from "./bot/";
 
-const Sprites = {
+export const SpriteClasses = {
 	Sprite,
 	Tree,
 	Rock,
 	Animal,
 	Bullet,
 	Score,
-	...Humans
+	...Human,
+	...Bot,
 };
-
-export default Sprites;

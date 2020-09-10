@@ -1,6 +1,6 @@
 import Sprite from "./Sprite.js";
-import {realSize, fixedSize} from "../helper/helperConfig.js";
 import * as Matter from "matter-js";
+import {realSize, fixedSize} from "../helper/helperConfig.js";
 
 class Bullet extends Sprite {
 	constructor(config) {

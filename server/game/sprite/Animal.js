@@ -9,20 +9,16 @@ class Animal extends Sprite {
 	}
 
 	reply(text, room) {
-		let fakeSocket = {
-			id: this.id,
-			isBot: true
-		};
 		axios({
 			url: "https://kakko.pandorabots.com/pandora/talk-xml",
 			data: `input=${text}&botid=9fa364f2fe345a10&custid=9a7bc0f95e4abb96`,
 			method: "POST",
 			mode: "no-cors"
 		}).then(res => {
-			let regexString = /<that>(.*?)<\/that>/.exec(res.data);
-			let responseChat = regexString ? regexString[1] : "...";
+			const regexString = /<that>(.*?)<\/that>/.exec(res.data);
+			const responseChat = regexString ? regexString[1] : "...";
 			responseChat = responseChat.replace(/([^\s]+)/, "oink");
-			room.addChat(responseChat, fakeSocket, false);
+			room.addChat(responseChat, this.id);
 		});
 	}
 
@@ -30,12 +26,12 @@ class Animal extends Sprite {
 		if (this.delayChangeDirection > 0) {
 			this.delayChangeDirection--;
 		} else {
-			let newDegree = random.int(0, 360);
-			let newSpeed = {
+			const newDegree = random.int(0, 360);
+			const newSpeed = {
 				x: Math.cos((newDegree * Math.PI) / 180),
 				y: Math.sin((newDegree * Math.PI) / 180)
 			};
-			let scale =
+			const scale =
 				this.getMovingSpeed() /
 				Math.sqrt(Math.pow(newSpeed.x, 2) + Math.pow(newSpeed.y, 2));
 
@@ -50,22 +46,22 @@ class Animal extends Sprite {
 
 		super.update(room); // update normal person stuff
 
-		let movingSpeed = this.getMovingSpeed();
-		let movingVector = {
+		const movingSpeed = this.getMovingSpeed();
+		const movingVector = {
 			x: Math.cos((this.degree * Math.PI) / 180),
 			y: Math.sin((this.degree * Math.PI) / 180)
 		};
-		let magMovingVector = Math.sqrt(
+		const magMovingVector = Math.sqrt(
 			Math.pow(movingVector.x, 2) + Math.pow(movingVector.y, 2)
 		);
-		let scale = movingSpeed / magMovingVector;
+		const scale = movingSpeed / magMovingVector;
 		movingVector.x *= scale;
 		movingVector.y *= scale;
 		this.pos.x += movingVector.x;
 		this.pos.y += movingVector.y;
 		// end of update bot position
 
-		let item = this.bag.arr[this.bag.index];
+		const item = this.bag.arr[this.bag.index];
 		item.update(room);
 		// if ()
 	}
