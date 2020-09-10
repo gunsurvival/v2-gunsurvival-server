@@ -1,5 +1,6 @@
 import random from "random";
 import axios from "axios";
+import * as Matter from "matter-js";
 import { Human } from "../human/";
 
 class Bot extends Human {

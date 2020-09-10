@@ -4,22 +4,19 @@ import random from "random";
 
 class Rock extends CircleSprite {
 	constructor(config) {
-		config = Object.assign(
-			{
-				name: "Rock"
-			},
-			config
-		);
+		config = Matter.Common.extend({
+			name: "Rock",
+			matterBodyOption: {
+				circleRadius: 90,
+				isStatic: true
+			}
+		}, config);
 		super(config);
 
 		const {
-			matterBodyOption = {}
+			matterBodyOption
 		} = config;
-
-		this._matterBodyOption = Object.assign({
-            circleRadius: 90,
-            isStatic: true
-        }, matterBodyOption);
+		this._matterBodyOption = matterBodyOption;
         this.matterBody = Matter.Bodies.circle(0, 0, this._matterBodyOption.circleRadius, this._matterBodyOption);
 	}
 
