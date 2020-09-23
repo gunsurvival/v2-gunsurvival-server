@@ -5,20 +5,25 @@ import Sprite from "./Sprite.js";
 class CircleSprite extends Sprite {
     // getQueryRange ko can truyen cung duoc
     constructor(config) {
+    	config = Matter.Common.extend({
+    		name: "CircleSprite",
+    		matterBodyOption: {
+    			circleRadius: 90
+    		}
+    	}, config);
         super(config);
 
         const {
-        	matterBodyOption = {}
+        	matterBodyOption
         } = config;
 
-        this._matterBodyOption = Object.assign({
-            circleRadius: 90,
-            isStatic: true
-        }, matterBodyOption);
+        this._matterBodyOption = matterBodyOption;
         this.matterBody = Matter.Bodies.circle(0, 0, this._matterBodyOption.circleRadius, this._matterBodyOption);
     }
 
-    update() {
+    update(queueAddSprites) {
+        super.update(queueAddSprites);
+        
         this.frameCount++;
         const scale = this.getScale();
         if (scale != this._scale) // neu khac scale truoc do thi moi scale (optimize)

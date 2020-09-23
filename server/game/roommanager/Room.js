@@ -1,4 +1,5 @@
 import * as Mode from "../mode/";
+import uniqid from "uniqid";
 import QuadTreeUtil from "../helper/quadtree.js";
 import Manager from "../helper/Manager.js";
 import Player from "./Player.js";
@@ -114,7 +115,7 @@ class Room {
                     const player = this.playerManager.add(new Player({
                         _socket: socket,
                         id: socket.id,
-                        name: socket.name || "idk"
+                        name: socket.name || `Guest ${uniqid()}`
                     }));
                     this.game.addPlayer(player);
                     resolve(player);

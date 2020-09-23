@@ -11,6 +11,7 @@ class Game {
         this._io = _io;
         this.id = id;
         this.frameTick = frameTick;
+        this.latency = 0;
         this.size = {
             width: 1500 + 400 * maxPlayer,
             height: 1000 + 300 * maxPlayer
@@ -77,9 +78,14 @@ class Game {
         // objects.push(ground);
     }
 
-    addSprite(sprite, rotate) {
+    addSprite(sprite) {
         this.spriteManager.add(sprite);
         Matter.World.add(this.matterEngine.world, sprite.matterBody);
+    }
+
+    deleteSprite(sprite) {
+        this.spriteManager.delete(sprite);
+        Matter.World.remove(this.matterEngine.world, sprite.matterBody);
     }
 
     updateRotate(sprite, rotate) {
@@ -101,17 +107,30 @@ class Game {
 
             if (delay <= 0) {
                 // not delaying the room
+                const queueAddSprites = [];
+                const queueDeleteSprites = [];
                 for (const sprite of this.spriteManager.items) {
-                    sprite.update();
+                    sprite.update(queueAddSprites);
+                    if (sprite.deleted)
+                        queueDeleteSprites.push(sprite);
                 }
+                // adding sprite after update state
+                for (const sprite of queueAddSprites) {
+                    this.addSprite(sprite);
+                }
+                // deleting sprite after update state
+                for (const sprite of queueDeleteSprites) {
+                    this.deleteSprite(sprite);
+                }
+
                 Matter.Engine.update(this.matterEngine, this.getDeltaTime());
 
                 // counting the proccesing speed
-                this.speed = Date.now() - timeStart;
-                // console.log(this.speed + "ms!");
-                if (this.speed > 30) {
+                this.latency = Date.now() - timeStart;
+                // console.log(this.latency + "ms!");
+                if (this.latency > 30) {
                     // >30ms => room is not stable, lagging
-                    delay = this.speed / 30; // add delay to stabilize the room
+                    delay = this.latency / 30; // add delay to stabilize the room
                     stackDelay += delay;
                     if (stackDelay > 100) {
                         // Phòng này lầy quá nên destroy :(

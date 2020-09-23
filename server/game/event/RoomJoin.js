@@ -1,3 +1,12 @@
+/**
+ * Joining a game room
+ *
+ * @memberof module:Event
+ * @param  {GameServer} server - GameServer
+ * @param  {Socket} socket - socket from event "connection" of io
+ * @param  {Object} userData - Data emitted from the client-side
+ * @param  {String} userData.id - The room id to join
+ */
 const RoomJoin = (server, socket, {id} = {}) => {
 	// check form
 	id = String(id);

@@ -1,3 +1,12 @@
+/**
+ * Change to another weapon
+ * 
+ * @memberof module:Event
+ * @param  {GameServer} server - GameServer
+ * @param  {Socket} socket - socket from event "connection" of io
+ * @param  {Object} userData - Data emitted from the client-side
+ * @param  {Number} userData.index - Index of item in player's bag
+ */
 const ChangeWeapon = (server, socket, {index} = {}) => {
 	// check form
 	index = parseInt(index);

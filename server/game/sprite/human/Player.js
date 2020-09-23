@@ -5,15 +5,17 @@ import { keyBind } from "../../helper/helperConfig.js";
 
 class Player extends CircleSprite {
     constructor(config) {
-        config = Object.assign({
+        config = Matter.Common.extend({
             name: "Player"
         }, config);
         super(config);
+        const { playerName } = config;
         this.logkmManager = new Manager();
+        this.playerName = playerName;
     }
 
-    update(room) {
-        super.update(room);
+    update(queueAddSprites) {
+        super.update(queueAddSprites);
 
         const movingVector = Matter.Vector.create(0, 0);
         const movingSpeed = this.getMovingSpeed();
@@ -57,6 +59,12 @@ class Player extends CircleSprite {
 
     getMovingSpeed() {
         return 0;
+    }
+
+    getData() {
+        return Object.assign(super.getData(), {
+            playerName: this.playerName
+        });
     }
 }
 

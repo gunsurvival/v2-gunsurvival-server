@@ -1,5 +1,14 @@
 import xssFilters from "xss-filters";
 
+/**
+ * Chatting
+ * 
+ * @memberof module:Event
+ * @param  {GameServer} server - GameServer
+ * @param  {Socket} socket - socket from event "connection" of io
+ * @param  {Object} userData - Data emitted from the client-side
+ * @param  {Number} userData.text - Content of the chat
+ */
 const Chat = (server, socket, {text} = {}) => {
 	// check form
 	text = String(text);

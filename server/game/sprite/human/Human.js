@@ -3,21 +3,22 @@ import * as Matter from "matter-js";
 
 class Human extends Player {
 	constructor(config) {
-		// config.type = "Human";
+		config = Matter.Common.extend({
+		    matterBodyOption: {
+		    	circleRadius: 40
+		    }
+		}, config);
 		super(config);
 
 		const {
-			matterBodyOption = {},
-			bag = {},
+			bag = {
+				arr: [],
+				index: -1
+			},
 		} = config;
-		
-		this._matterBodyOption = Object.assign({
-            circleRadius: 40,
-        }, matterBodyOption);
-        this.matterBody = Matter.Bodies.circle(0, 0, this._matterBodyOption.circleRadius, this._matterBodyOption);
-        this.bag = bag;
+
+        // this.bag = bag;
         this.blood = 100;
-        this.holdingCoolDown = 0;
         this.status = {};
 	}
 
@@ -55,8 +56,8 @@ class Human extends Player {
 		return Math.min(Math.max(this.blood / 100, 0.5), 2); // 0.5 >= x >= 2
 	}
 
-	update(room) {
-		super.update(room);
+	update(queueAddSprites) {
+		super.update(queueAddSprites);
 
 		if (this.isDead()) {
 			return;
@@ -65,9 +66,10 @@ class Human extends Player {
 		this.status.hideInTree = false;
 		this.status.moving = false;
 
-		// let item = this.bag.arr[this.bag.index];
-		// item.update(room);
-		// if ()
+		const item = this.bag.arr[this.bag.index];
+		if (item)
+			item.update(owner, queueAddSprites);
+		// item.update(queueAddSprites, owner);
 	}
 
 	collide(object) {

@@ -3,7 +3,14 @@ import * as Spritet from "../../sprite/";
 import {degreesToRadians} from "../../helper/helper.js";
 import Gun from "./Gun.js";
 
+/**
+ * A class representing automatic gun such as: ak47, m4a1, m249
+ */
 class Automatic extends Gun {
+	/**
+	 * Create new Automatic gun
+	 * @param  {Object} config
+	 */
 	constructor(config) {
 		super(config);
 	}
@@ -19,26 +26,30 @@ class Automatic extends Gun {
 		return this.queueDelay.findIndex(e => e.name == "reload") != -1;
 	}
 
-	update(room) {
-		super.update(room);
-		const owner = room.findObject("gunners", this.ownerID);
-		if (!owner) return;
+	getCurrentState(owner) {
+		let status = "running";
+		if (!owner.status.moving) status = "staying";
+		else if (owner.keyDown["shift"])
+			// walking
+			status = "walking";
+		return status;
+	}
+
+	update(queueAddSprites, owner) {
+		super.update(queueAddSprites);
 		if (
-			owner.mouseDown["left"] &&
+			owner.logkmManager.find({
+				mouseButton: "left",
+				value: true
+			}) &&
 			!this.isDelay() &&
 			this.bulletCount > 0
 		) {
 			this.addDelay("fire");
 
-			let status = "running";
-			if (!owner.status.moving) status = "staying";
-			else if (owner.keyDown["shift"])
-				// walking
-				status = "walking";
-
 			const noise = randomNormal({
 				mean: 0,
-				dev: (Math.PI / 180) * (this.dev[status] / 4)
+				dev: (Math.PI / 180) * (this.dev[this.getCurrentState(owner)] / 4)
 			});
 
 			const radian = degreesToRadians(owner.degree);

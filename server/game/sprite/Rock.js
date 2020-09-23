@@ -20,8 +20,8 @@ class Rock extends CircleSprite {
         this.matterBody = Matter.Bodies.circle(0, 0, this._matterBodyOption.circleRadius, this._matterBodyOption);
 	}
 
-	update() {
-		super.update();
+	update(queueAddSprites) {
+		super.update(queueAddSprites);
 	}
 
 	getData() {

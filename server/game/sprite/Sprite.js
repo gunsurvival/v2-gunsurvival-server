@@ -8,6 +8,7 @@ class Sprite {
 		this.id = id;
 		this.matterBody; // *
 		this.frameCount = frameCount;
+		this.deleted = false;
 	}
 
 	update() {
@@ -33,6 +34,10 @@ class Sprite {
 			position,
 			rotate: angle
 		}
+	}
+
+	delete() {
+		this.deleted = true;
 	}
 }
 

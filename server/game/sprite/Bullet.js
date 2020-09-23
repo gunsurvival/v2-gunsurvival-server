@@ -106,8 +106,8 @@ class Bullet extends Sprite {
 		}
 	}
 
-	update() {
-		super.update();
+	update(queueAddSprites) {
+		super.update(queueAddSprites);
 		if (this.delete) return;
 
 		if (

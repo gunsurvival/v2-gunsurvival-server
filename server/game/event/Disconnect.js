@@ -1,5 +1,12 @@
 import logger from "node-color-log";
 
+/**
+ * Socket disconnected
+ *
+ * @memberof module:Event
+ * @param  {GameServer} server - GameServer
+ * @param  {Socket} socket - socket from event "connection" of io
+ */
 const Disconnect = (server, socket) => {
 	logger.info(`1 player disconnected! Online(s): ${server.getOnline()}`);
 	server._io.emit("online", server.getOnline());

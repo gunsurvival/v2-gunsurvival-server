@@ -22,7 +22,9 @@ class Animal extends Sprite {
 		});
 	}
 
-	update(room) {
+	update(queueAddSprites) {
+		super.update(queueAddSprites);
+		
 		if (this.delayChangeDirection > 0) {
 			this.delayChangeDirection--;
 		} else {

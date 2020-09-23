@@ -1,61 +1,75 @@
 import logger from "node-color-log";
 import Manager from "./helper/Manager.js";
-import * as event from "./event";
+import * as Event from "./Event";
 
+/**
+ * Class representing a game server
+ */
 class GameServer {
+    /**
+     * @param  {io} _io - io
+     */
     constructor(_io) {
         this._io = _io;
         this.roomManager = new Manager(this._io); // _io is "io"
 
         this._io.on("connection", socket => {
             logger.info(`1 player connected! Online(s): ${this.getOnline()}`);
-            // event.RoomCreate(this, socket, {
+            // Event.RoomCreate(this, socket, {
             // 	text: "idk",
             // 	maxPlayer: 6,
             // 	mode: "Creative"
             // });
             socket.on("disconnect", data =>
-                event.Disconnect(this, socket, data)
+                Event.Disconnect(this, socket, data)
             );
-            // for (const FuncName in event) {
-            // 	socket.on(FuncName, data => event[FuncName](this, socket, data));
+            // for (const FuncName in Event) {
+            // 	socket.on(FuncName, data => Event[FuncName](this, socket, data));
             // }
-            socket.on("UpdateData", data =>
-                event.UpdateData(this, socket, data)
-            );
+            socket.on("ChangeName", data => Event.ChangeName(this, socket, data));
             socket.on("ChangeWeapon", data =>
-                event.ChangeWeapon(this, socket, data)
+                Event.ChangeWeapon(this, socket, data)
             );
-            socket.on("Chat", data => event.Chat(this, socket, data));
-            socket.on("Refresh", data => event.Refresh(this, socket, data));
-            socket.on("Pingms", data => event.Pingms(this, socket, data));
+            socket.on("Chat", data => Event.Chat(this, socket, data));
+            socket.on("Refresh", data => Event.Refresh(this, socket, data));
+            socket.on("Pingms", data => Event.Pingms(this, socket, data));
             socket.on("RoomCreate", data =>
-                event.RoomCreate(this, socket, data)
+                Event.RoomCreate(this, socket, data)
             );
-            socket.on("RoomJoin", data => event.RoomJoin(this, socket, data));
+            socket.on("RoomJoin", data => Event.RoomJoin(this, socket, data));
             socket.on("RoomLeave", data =>
-                event.RoomLeave(this, socket, data)
+                Event.RoomLeave(this, socket, data)
             );
             socket.on("UpdateLogkm", data =>
-                event.UpdateLogkm(this, socket, data)
+                Event.UpdateLogkm(this, socket, data)
             );
             socket.on("UpdateRotate", data =>
-                event.UpdateRotate(this, socket, data)
+                Event.UpdateRotate(this, socket, data)
             );
         });
         logger.info("Game Server started!");
     }
 
+    /**
+     * @param  {Room} room - A object Room
+     */
     destroyRoom(room) {
         this._io.emit("room delete", room.id);
         room.destroy();
         this.roomManager.delete(room);
     }
 
+    /**
+     * @return {Number} Number of onlines
+     */
     getOnline() {
         return this._io.engine.clientsCount;
     }
 
+    /**
+     * @param  {String} socketID - ID of socket
+     * @return {Room} The room which socket with id is socketID in
+     */
 	getRoomBySocketID(socketID) {
 		const indexRoom = this.roomManager.items.findIndex(room => {
 			if (

@@ -1,4 +1,5 @@
 import ChangeWeapon from "./ChangeWeapon.js";
+import ChangeName from "./ChangeName.js";
 import Chat from "./Chat.js";
 import Disconnect from "./Disconnect.js";
 import Refresh from "./Refresh.js";
@@ -11,6 +12,7 @@ import UpdateRotate from "./UpdateRotate.js";
 
 export {
 	ChangeWeapon,
+	ChangeName,
 	Chat,
 	Disconnect,
 	Refresh,

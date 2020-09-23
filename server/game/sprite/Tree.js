@@ -4,29 +4,24 @@ import random from "random";
 
 class Tree extends CircleSprite {
 	constructor(config) {
-		config = Object.assign(
-			{
-				name: "Tree"
-			},
-			config
-		);
+		config = Matter.Common.extend({
+		    name: "Tree",
+		    matterBodyOption: {
+		        circleRadius: 20,
+		        isStatic: true
+		    }
+		}, config);
 		super(config);
 
 		const {
-			matterBodyOption = {},
 			hideCount = 0,
 		} = config;
 
-		this._matterBodyOption = Object.assign({
-            circleRadius: 20,
-            isStatic: true
-        }, matterBodyOption);
-        this.matterBody = Matter.Bodies.circle(0, 0, this._matterBodyOption.circleRadius, this._matterBodyOption);
 		this.hideCount = hideCount; // so vat the tron trong cai cay
 	}
 
-	update() {
-		super.update();
+	update(queueAddSprites) {
+		super.update(queueAddSprites);
 	}
 
 	getData() {

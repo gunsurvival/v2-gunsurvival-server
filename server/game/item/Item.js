@@ -42,6 +42,10 @@ class Item {
 			}
 		}
 	}
+
+	onTrigger() {
+		
+	}
 }
 
 export default Item;

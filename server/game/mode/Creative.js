@@ -6,7 +6,7 @@ class Creative extends Game {
 		super(config);
 		this.mode = "Creative";
 		this.createMap("random");
-		// this.addSprite(new Sprite.Mitsuku());
+		this.addSprite(new Sprite.Mitsuku());
 	}
 }
 

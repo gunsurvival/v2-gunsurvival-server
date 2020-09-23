@@ -4,21 +4,17 @@ import random from "random";
 
 class Score extends CircleSprite {
     constructor(config) {
-        config = Object.assign({
-                name: "Score"
-            },
-            config
-        );
+        config = Matter.Common.extend({
+            name: "Score",
+            matterBodyOption: {
+                circleRadius: 10
+            }
+        }, config);
         super(config);
+
         const {
-            matterBodyOption = {},
             value = 10,
         } = config;
-
-        this._matterBodyOption = Object.assign({
-            circleRadius: 10,
-        }, matterBodyOption);
-        this.matterBody = Matter.Bodies.circle(0, 0, this._matterBodyOption.circleRadius, this._matterBodyOption);
         this.value = value;
     }
 
@@ -26,8 +22,8 @@ class Score extends CircleSprite {
         return this.getScale() * 0.2;
     }
 
-    update() {
-        super.update();
+    update(queueAddSprites) {
+        super.update(queueAddSprites);
         const scale = this.getScale();
         Matter.Body.scale(this.matterBody, scale, scale);
         const speed = this.getSpeed();
