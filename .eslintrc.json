@@ -1,30 +1,15 @@
 {
     "env": {
-        "browser": true,
-        "es2020": true,
+        "es2021": true,
         "node": true
     },
-    "extends": "eslint:recommended",
+    "extends": [
+        "google"
+    ],
     "parserOptions": {
-        "ecmaVersion": 11,
+        "ecmaVersion": 12,
         "sourceType": "module"
     },
     "rules": {
-        "indent": [
-            "error",
-            "tab"
-        ],
-        "linebreak-style": [
-            "error",
-            "windows"
-        ],
-        "quotes": [
-            "error",
-            "double"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ]
     }
 }

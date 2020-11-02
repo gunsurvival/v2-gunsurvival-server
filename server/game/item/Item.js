@@ -1,46 +1,27 @@
 import {items} from "../helper/helperConfig.js";
+import QueueDelay from "../helper/QueueDelay.js";
 
 class Item {
 	// constructor({ owner, name, round, reload, weight, delayHold, fire } = {}) {
 	constructor({ownerID, name, id} = {}) {
-		Object.assign(this, items[name]);
-		this.id = id;
-		this.delay = 0;
-		this.name = name;
-		this.queueDelay = [];
+		Object.assign(this, items[name]); // merge all prop into this item
 		this.ownerID = ownerID;
-		this.take();
+		this.name = name;
+		this.id = id;
+		this.queueDelay = new QueueDelay();
+		this.pick();
+	}
+
+	pick() {
+		this.queueDelay.addDelay("pick", this.delay.pick);
 	}
 
 	isDelay() {
-		return this.delay > 0;
-	}
-
-	take() {
-		this.queueDelay = [
-			{
-				name: "hold",
-				callback: null
-			}
-		];
-	}
-
-	addDelay(name, callback) {
-		this.queueDelay.push({
-			name,
-			callback
-		});
+		return this.queueDeplay.items.length > 0;
 	}
 
 	update() {
-		if (this.isDelay()) {
-			this.delay--;
-		} else {
-			if (this.queueDelay.length > 0) {
-				let newDelayData = this.queueDelay.splice(0, 1);
-				this.delay = this[newDelayData.name];
-			}
-		}
+		this.queueDelay.update(this);
 	}
 
 	onTrigger() {

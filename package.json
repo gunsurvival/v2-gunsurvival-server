@@ -7,7 +7,7 @@
     "debug": "nodemon --inspect --exec babel-node server/index.js",
     "dev": "nodemon --exec babel-node server/index.js"
   },
-  "author": "MrBean <KB2A TEAM>",
+  "author": "khoakomlem",
   "license": "MIT",
   "dependencies": {
     "axios": "^0.19.2",
@@ -19,14 +19,10 @@
     "express-session": "^1.17.1",
     "matter-js": "^0.14.2",
     "node-color-log": "^5.1.0",
-    "p2": "^0.7.1",
-    "p5collide": "^2.0.2",
     "random": "^2.2.0",
     "random-normal": "^1.0.0",
-    "sat": "^0.8.0",
     "socket.io": "^2.3.0",
     "uniqid": "^5.2.0",
-    "uniquid": "^1.1.4",
     "xss-filters": "^1.2.7"
   },
   "devDependencies": {
@@ -34,7 +30,8 @@
     "@babel/core": "^7.10.2",
     "@babel/node": "^7.10.1",
     "@babel/preset-env": "^7.10.2",
-    "eslint": "^7.5.0"
+    "eslint": "^7.10.0",
+    "eslint-config-google": "^0.14.0"
   },
   "description": "gunsurvival server",
   "repository": {

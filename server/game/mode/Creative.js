@@ -2,7 +2,7 @@ import { SpriteClasses as Sprite } from "../sprite/"; // all sprite classes
 import Game from "./Game.js";
 
 class Creative extends Game {
-	constructor(config) {
+	constructor(config={}) {
 		super(config);
 		this.mode = "Creative";
 		this.createMap("random");

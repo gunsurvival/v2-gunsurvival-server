@@ -31,7 +31,7 @@ class Manager {
 	}
 
 	/**
-	 * Clear all item in this manager
+	 * Delete all items in this.items
 	 */
 	clear() {
 		this.items.splice(0, this.items.length);
@@ -39,36 +39,20 @@ class Manager {
 
 	/**
 	 * @param  {Object} query - query object, if query is {} then it's will return this.top()
-	 * @param  {Object} option - Option for querying
-	 * @param  {Boolean} [option.returnIndex = false] - If true, then it will return index number instead of item object
-	 * @return {Object} item - return item depend on finding query, if not found, return undefined or -1
+	 * @param  {Boolean} returnIndex - If true, will return index of item
+	 * @return {Object} item - return item depend on query and options, if not found, return undefined or -1
 	 */
-	find(query, option) {
-		const isObject = typeof option == "object";
-
-		const returnIndex = Boolean(
-			(isObject ? option.returnIndex : arguments[1]) || false
-		);
-		const slowReturn = Boolean(
-			(isObject ? option.slowReturn : arguments[2]) || false
-		);
-		// nếu slowReturn bật bạn phải truyền vào biến query là chính object bạn cần tìm (ko phải shallow copy)
-		const autoAdd = Boolean(
-			(isObject ? option.autoAdd : arguments[3]) || false
-		)
+	find(query, returnIndex) {
+		const isObject = typeof options == "object";
 
 		const indexFind = this.items.findIndex(item => {
-			const queries = slowReturn == false ? query : item;
-			for (const property in queries) {
+			for (const property in query) {
 				if (query[property] != item[property]) {
 					return false;
 				}
 			}
 			return true;
 		});
-		if (indexFind == -1 && autoAdd) {
-			this.add(query, false);
-		}
 		if (returnIndex) return indexFind;
 		return this.items[indexFind];
 	}
@@ -76,16 +60,17 @@ class Manager {
 	/**
 	 * @param {Object} item - An item object
 	 */
-	add(item, checkDuplicate = true) {
-		// addingCondition is a condition for checking duplicate of the item before adding
-		if (checkDuplicate) {
-			const index = this.find(item, true);
+	add(item, findQuery = {}) {
+		// findQuery is a condition for checking duplicate of the item before adding
+		if (Object.keys(findQuery).length != 0) {
+			const index = this.find(findQuery, true);
 			if (index == -1) {
 				this.items.push(item);
 				return this.bottom();
 			}
 			return this.items[index];
 		}
+
 		this.items.push(item);
 		return this.bottom();
 	}
@@ -94,9 +79,7 @@ class Manager {
 	 * @param  {Object} queryObject - query object, if query is {} then it's will return this.top()
 	 */
 	delete(queryObject) {
-		const itemIndex = this.find(queryObject, {
-			returnIndex: true
-		});
+		const itemIndex = this.find(queryObject, true);
 		if (itemIndex != -1) this.items.splice(itemIndex, 1);
 	}
 }

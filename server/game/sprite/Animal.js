@@ -3,7 +3,7 @@ import axios from "axios";
 import Sprite from "./Sprite.js";
 
 class Animal extends Sprite {
-	constructor(config) {
+	constructor(config={}) {
 		super(config);
 		this.delayChangeDirection = 0;
 	}

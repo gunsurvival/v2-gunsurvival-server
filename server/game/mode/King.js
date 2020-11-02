@@ -3,7 +3,7 @@ import * as Sprite from "../sprite";
 import Game from "./Game.js";
 
 class King extends Game {
-	constructor(config) {
+	constructor(config={}) {
 		super(config);
 		this.mode = "King";
 		this.createMap(

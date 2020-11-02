@@ -31,7 +31,7 @@ class Sprite {
 			id: this.id,
 			name: this.name,
 			frameCount: this.frameCount,
-			position,
+			pos: position,
 			rotate: angle
 		}
 	}

@@ -3,7 +3,7 @@ import axios from "axios";
 import Bot from "./Bot.js";
 
 class Mitsuku extends Bot {
-	constructor(config) {
+	constructor(config={}) {
 		config = Matter.Common.extend({
 		    botName: "Mitsuku"
 		}, config);

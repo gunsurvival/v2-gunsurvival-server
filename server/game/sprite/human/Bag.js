@@ -4,7 +4,7 @@ import Manager from "../../helper/Manager.js";
  * Class representing a human's bag
  */
 class Bag extends Manager {
-	constructor(config) {
+	constructor(config = {}) {
 		super();
 		const {
 			maxCapacity = 5
@@ -33,3 +33,5 @@ class Bag extends Manager {
 			this.currentIndex = -1;
 	}
 }
+
+export default Bag;

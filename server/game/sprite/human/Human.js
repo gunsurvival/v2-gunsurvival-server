@@ -1,8 +1,10 @@
 import Player from "./Player.js";
+import Bag from "./Bag.js";
+import * as Item from "../../item/index.js";
 import * as Matter from "matter-js";
 
 class Human extends Player {
-	constructor(config) {
+	constructor(config = {}) {
 		config = Matter.Common.extend({
 		    matterBodyOption: {
 		    	circleRadius: 40
@@ -11,13 +13,15 @@ class Human extends Player {
 		super(config);
 
 		const {
-			bag = {
-				arr: [],
-				index: -1
-			},
+			bag = ["ak47"],
 		} = config;
 
-        // this.bag = bag;
+        this.bag = new Bag();
+        this.bag.add(new Item.Gun.Automatic({
+        	ownerID: this.id,
+        	name: "ak47",
+        	id: "ak47" + Date.now()
+        }));
         this.blood = 100;
         this.status = {};
 	}
@@ -66,10 +70,10 @@ class Human extends Player {
 		this.status.hideInTree = false;
 		this.status.moving = false;
 
-		const item = this.bag.arr[this.bag.index];
+		const item = this.bag.getCurrentItem();
 		if (item)
-			item.update(owner, queueAddSprites);
-		// item.update(queueAddSprites, owner);
+			item.update(queueAddSprites, this);
+			// item.update(owner, queueAddSprites);
 	}
 
 	collide(object) {

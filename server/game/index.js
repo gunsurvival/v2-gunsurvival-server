@@ -11,7 +11,7 @@ class GameServer {
      */
     constructor(_io) {
         this._io = _io;
-        this.roomManager = new Manager(this._io); // _io is "io"
+        this.roomManager = new Manager();
 
         this._io.on("connection", socket => {
             logger.info(`1 player connected! Online(s): ${this.getOnline()}`);

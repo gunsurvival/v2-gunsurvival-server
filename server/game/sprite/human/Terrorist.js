@@ -1,7 +1,7 @@
 import Human from "./Human.js";
 
 class Terrorist extends Human {
-	constructor(config) {
+	constructor(config={}) {
 		super(config);
 		// this.img = "terrorist";
 	}

@@ -3,7 +3,7 @@ import * as Matter from "matter-js";
 import random from "random";
 
 class Rock extends CircleSprite {
-	constructor(config) {
+	constructor(config={}) {
 		config = Matter.Common.extend({
 			name: "Rock",
 			matterBodyOption: {

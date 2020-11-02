@@ -4,7 +4,7 @@ import Manager from "../../helper/Manager.js";
 import { keyBind } from "../../helper/helperConfig.js";
 
 class Player extends CircleSprite {
-    constructor(config) {
+    constructor(config={}) {
         config = Matter.Common.extend({
             name: "Player"
         }, config);
@@ -51,10 +51,12 @@ class Player extends CircleSprite {
         const magMovingVector = Matter.Vector.magnitude(movingVector);
         const scale = (magMovingVector > 0) ? (movingSpeed / magMovingVector) : 1; // neu mag = 0 thi se khong chia duoc cho 0
         const speed = Matter.Vector.mult(movingVector, scale);
+        if (this.matterBody.speed < movingSpeed) {
+            Matter.Body.set(this.matterBody, {
+                velocity: speed
+            });
+        }
         // Matter.Body.applyForce(this.matterBody, this.matterBody.position, speed)
-        Matter.Body.set(this.matterBody, {
-            velocity: speed
-        });
     }
 
     getMovingSpeed() {

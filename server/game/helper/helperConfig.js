@@ -1,10 +1,11 @@
 const items = {
 	ak47: {
 		imgName: "bullet",
-		size: 0.4,
-		split: 1,
-		hold: 20,
-		fire: 4,
+		delay: {
+			pick: 20,
+			reload: 45,
+			fire: 4,
+		},
 		speed: 150,
 		friction: 0.93,
 		dev: {
@@ -13,8 +14,7 @@ const items = {
 			staying: 10
 		},
 		round: 30,
-		reload: 45,
-		weight: 1,
+		weight: 3.47,
 		class: "Automatic"
 	},
 	m4a1: {
